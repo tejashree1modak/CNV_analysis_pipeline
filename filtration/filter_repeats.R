@@ -1,5 +1,6 @@
-#This script is a part of filtration of duplicatons that overlap with repeat regions
-# Duplications that overlap >10% with a repeat region were filtered from the analyses. 
+#This script filters duplicatons identified by delly using the following criteria:
+  # Duplications that are likely fixed in the population.   
+  # Duplications that overlap >10% with a repeat region. 
 
 # Dependencies installation and loading
 for (i in c("tidyverse" , "here")) {
@@ -9,11 +10,11 @@ for (i in c("tidyverse" , "here")) {
   }
 }
 
+##################################################################################################
 #Repeatmasker output was obtained from the ftp server where C.virginica genome files are at
 #ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/002/022/765/GCA_002022765.4_C_virginica-3.0
 #The file is GCA_002022765.4_C_virginica-3.0_rm.out.gz
-#Input file generated from NCBI as preprocessed to make a bedfile of repeats as follows:
-#awk -v OFS='\t' '{print $6, $7}' GCA_002022765.4_C_virginica-3.0_rm.out > Cvir_genome_repeats.txt
+#This was preprocessed to make a bedfile of repeats as follows:
 #awk -v OFS='\t' 'NR>3{print $5,$6,$7,$5"_"$7}' GCA_002022765.4_C_virginica-3.0_rm.out >  Cvir_genome_repeats.bed
 
 #Modify chromosome names to match gff3 and get Cvir_genome_repeats_mod.bed
@@ -27,6 +28,7 @@ for (i in c("tidyverse" , "here")) {
 ##bedtools merge -i Cvir_genome_repeats_mod.bed -c 1,5 -o count,collapse > Cvir_genome_repeats_merged.bed
 #Use bedtools using the -wo flag to obtain overlaps between merged repeats and dups
 #bedtools intersect -a oysterduplicate_sort.bed -b Cvir_repeats_merged.bed -wo > dup_repeat_merged_overlap_mod.bed
+##################################################################################################
 
 #### Read in vcf file from delly ####
 #all vcf data for each individual for each duplication obtained from DELLY in a vcf format
