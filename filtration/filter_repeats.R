@@ -13,8 +13,8 @@ for (i in c("tidyverse" , "here")) {
 #ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/002/022/765/GCA_002022765.4_C_virginica-3.0
 #The file is GCA_002022765.4_C_virginica-3.0_rm.out.gz
 #Input file generated from NCBI as preprocessed to make a bedfile of repeats as follows:
-#Input file 1: awk -v OFS='\t' '{print $6, $7}' GCA_002022765.4_C_virginica-3.0_rm.out > Cvir_genome_repeats.txt
-#Input file 2: awk -v OFS='\t' 'NR>3{print $5,$6,$7,$5"_"$7}' GCA_002022765.4_C_virginica-3.0_rm.out >  Cvir_genome_repeats.bed
+#awk -v OFS='\t' '{print $6, $7}' GCA_002022765.4_C_virginica-3.0_rm.out > Cvir_genome_repeats.txt
+#awk -v OFS='\t' 'NR>3{print $5,$6,$7,$5"_"$7}' GCA_002022765.4_C_virginica-3.0_rm.out >  Cvir_genome_repeats.bed
 
 #Modify chromosome names to match gff3 and get Cvir_genome_repeats_mod.bed
 #sed 's/CM008241.1/NC_035780.1/g' , sed 's/CM008242.1/NC_035781.1/g', sed 's/CM008243.1/NC_035782.1/g', 
@@ -28,7 +28,8 @@ for (i in c("tidyverse" , "here")) {
 #Use bedtools using the -wo flag to obtain overlaps between merged repeats and dups
 #bedtools intersect -a oysterduplicate_sort.bed -b Cvir_repeats_merged.bed -wo > dup_repeat_merged_overlap_mod.bed
 
-#all vcf data for each individual for each duplication obtained from DELLY
+#### Read in vcf file from delly ####
+#all vcf data for each individual for each duplication obtained from DELLY in a vcf format
 oysterdup <- read.table(here("filtration/germline_nohead_dup.vcf"),stringsAsFactors = FALSE)
 header <- strsplit("CHROM POS ID      REF     ALT     QUAL    FILTER  
                    INFO    FORMAT  CL_1    CL_2    CL_3    CL_4    CL_5    CL_6    CLP_1   CLP_2   
@@ -47,8 +48,49 @@ colnames(oysterdup)<-header
 oysterdup <-dplyr::filter(oysterdup,FILTER=="PASS")
 oysterdup$end <- str_split(oysterdup$INFO, ';') %>%
   map_chr(5) %>% str_split('=') %>% map_chr(2) %>% as.integer()
+#Get length of each duplication
 oysterdup$length <- oysterdup$end - oysterdup$POS
 
+#### Presence/Absence of duplications by sample ####
+#Extracting genotype will inform us of presence/absence of a duplication per sample
+# Genotype 0/0 = homozygous for absence of duplication, genotype 0/1 or 1/0 = heterozygouse for presence of duplication
+# genotype 1/1 = homozygous for presence of duplication
+
+#Function to pull out genotype from a col in the vcf for a sample
+getg <- function(bedout_col){
+  str_split( bedout_col, ':') %>% map_chr(1)
+}
+
+gtypes_only <- map_dfr(select(oysterdup,CL_1:UMFS_6),getg)
+gtypes_only$ID <- oysterdup$ID
+gtypes_long <- gather(gtypes_only,key=sample,value=gtype,-ID)
+gtypes_long$pop <- str_split(gtypes_long$sample,'_') %>% map(1) %>% as.character()
+gtypes_long$pop <- as.vector(gtypes_long$pop)
+gtypes_long$num_alts <- str_split(gtypes_long$gtype,'/') %>% 
+  map(as.integer) %>% 
+  map_int(sum)
+
+#adding dups in all individuals of same pop to give pop count
+pop_num_alts <- gtypes_long %>% filter(!is.na(num_alts)) %>%
+  group_by(pop,ID) %>% summarize(num_alts = sum(num_alts)) 
+#join to get duplication information per population
+pop_num_alts <- left_join(pop_num_alts,select(oysterdup,ID,length) )
+#Pulling out duplications present in all populations
+#when num_alts = genotype 0/0 meaning duplication is absent in the sample at that location
+#when num_alts > 0 genptype 0/1 or 1/0 or 1/1 meaning duplication is present in the sample at that location
+pop_num_alts_present <- filter(pop_num_alts,num_alts >0)
+
+#### Filter 1: Fixed duplications ####
+#Get dups common to all populations since they are likely artifacts 
+common_dups <- pop_num_alts_present %>% group_by(ID) %>% tally(sort = TRUE) %>% head(961) %>% select(ID)
+#Get dups common to all populations but present in all samples of each population
+sample_num_alts <- gtypes_long %>% filter(!is.na(num_alts)) %>% filter(num_alts >0)
+#Criteria for filteration of common dups: 
+#Out of the 961 dups that are present in all populations how many are present in >90% samples (i.e. in 81 samples) 
+common_filter_dups <- 
+  semi_join(sample_num_alts,common_dups, by="ID") %>% group_by(ID) %>% summarize(count=n()) %>% filter(count > 81) %>% select("ID")
+
+#### Filter 2: Duplications in repeat regions ####
 # Read in bedtools Ouput of intersect between repeat regions in reference genome and duplications  
 dup_repeat_overlap <- read.table(here("filtration/dup_repeat_merged_overlap_mod.bed"), 
                                  sep="\t" , stringsAsFactors = FALSE)
@@ -64,4 +106,19 @@ percent_overlap$percent <- (percent_overlap$total_len/percent_overlap$length)*10
 #dups with >10% repeat coverage
 percent_overlap %>% filter(percent > 10) %>% nrow() #filter out 1778 dups
 repeat_filter_dups <- percent_overlap %>% filter(percent > 10) %>% select("ID")
-# These duplications were filtered from the final set. 
+
+#### Get final set of duplications post filtration ####
+#Combining list of dups to be filtered because they are shared among >90% samples or have >10% repeat coverage.
+filter_dups <- rbind(common_filter_dups, repeat_filter_dups) %>% distinct() 
+# Make a bedfile for filtered duplications for further analysis
+cvir_dup_bed <- oysterdup %>% select(CHROM,POS,end,ID)
+colnames(cvir_dup_bed) <- c("CHROM","start","stop","ID")
+# Number of duplications post filtration
+cvir_dups_fil_bed <- anti_join(cvir_dup_bed,filter_dups) %>% group_by(ID) %>% summarize(count=n()) %>% nrow() #11339 
+
+#Write the file if needed. Bed file already available in the dir for use.
+#cvir_dups_fil_bed %>%
+#  write.table(here("filtration/cvir_filtered_dups.bed"), append = FALSE, sep = "\t",quote = FALSE,
+#              row.names = F, col.names = FALSE)
+
+
