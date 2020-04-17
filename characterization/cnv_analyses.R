@@ -9,6 +9,9 @@ for (i in c("tidyverse","here")) {
 }
 
 #### Copy Number comparison of Duplications across locations ####
+# Read in file with filtered duplications. 
+oysterdup_fil <- read.table(here("filtration/oysterdup_fil"), 
+                            sep="\t" , stringsAsFactors = FALSE, header = TRUE)
 #Getting the genotype and copy number for all pop
 #function to pull out copy num from a col in the vcf for a sample
 getcn <- function(bedout_col){
@@ -18,6 +21,12 @@ cn_only <- map_dfr(select(oysterdup_fil,CL_1:UMFS_6),getcn)
 cn_only$ID <- oysterdup_fil$ID
 cn_only$POS <- oysterdup_fil$POS
 cn_only$CHROM <- oysterdup_fil$CHROM
+#Function to pull out genotype from a col in the vcf for a sample
+getg <- function(bedout_col){
+  str_split( bedout_col, ':') %>% map_chr(1)
+}
+gtypes_only <- map_dfr(select(oysterdup,CL_1:UMFS_6),getg)
+gtypes_only$ID <- oysterdup$ID
 #pulling out gtype and cn for each pop side by side to visually compare
 gtypes_cn <- left_join(cn_only, gtypes_only, by = 'ID') 
 gtypes_cn <- gtypes_cn[,order(colnames(gtypes_cn))]
