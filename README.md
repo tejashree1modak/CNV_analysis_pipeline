@@ -30,6 +30,7 @@ This step is used to characterize filtered duplications
     2. across genome
 
 Script 1: post_filtration_analyses.R 
+
 Script 2: cnv_analyses.R
 
 #### 3. Annotation
