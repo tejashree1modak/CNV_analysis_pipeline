@@ -1,23 +1,23 @@
 ## Exceptional copy number variation within and among populations of the eastern oyster (*Crassostrea virginica*) 
 ### Tejashree H. Modak, Rachel S. Schwartz
 
-#### Duplication annotation:
-##### Annotation files for the reference genome can be found here:
-- [C.virginica genome](https://www.ncbi.nlm.nih.gov/genome/398)
+### Duplication annotation:
+#### Annotation files for the reference genome can be found here:
+- [*C.virginica* genome](https://www.ncbi.nlm.nih.gov/genome/398)
 
 oyster_genes.bed: BEDfile of genes obtained from the genome annotation 
 oyster_dups.bed: BEDfile of duplications identified by DELLY
-##### BEDTools used to annotate duplications 
+#### BEDTools used to annotate duplications 
 Bedtools intersect was used to annotate duplications  
 `bedtools intersect -wa -wb oyster_dups.bed oyster_genes.bed > Oyster_Dup_gene.bed`
 
 This file is available in annotation dir. 
 annotation_dups.R produces file (dup_annot) for duplication with their mapped annotation.
 
-#### KEGG and GO annotation using annotation_dups.R 
+### KEGG and GO annotation using annotation_dups.R 
 GO and KEGG mapping from the reference genome was used to map duplications to these terms. 
 
-#### Input files for  annot_dups.R
+### Input files for  annot_dups.R
 These files were made from reference annotation in GFF3 format as follows: 
 
 Extract LOC and annotation
@@ -30,14 +30,14 @@ Extract LOC and protein ID
 
 Output: annotation_dups.R produces files (dup_kegg, dup_go) for duplications with their mapped KEGG or GO annotation.
 
-#### Mapping duplications to different features in the genome
+### Mapping duplications to different features in the genome
 
 Bedtools with -wo flag was used to obtain overlap of duplications with each type of genomic feature.
 The bedtools output was processed as follows to obtain the number of duplicaitons completely within the genome feature:
 
 `cut -f 4 -d ' ' <bedtools_ouput> | sort -n | uniq | wc -l`
 
-##### Overlap with genes
+#### Overlap with genes
 
 Genes were pulled out from the reference.gff3 file:
 
@@ -45,7 +45,7 @@ Genes were pulled out from the reference.gff3 file:
 
 Result: 4406 (38.8%) dups lie completely within genes
 
-##### Overlap with exons
+#### Overlap with exons
 
 Exons were pulled out from the reference.gff3 file:
 
@@ -53,7 +53,7 @@ Exons were pulled out from the reference.gff3 file:
 
 Result: 316 (2.7%) dups lie completely within exons
 
-##### Overlap with introns and intergenic regions separately
+#### Overlap with introns and intergenic regions separately
 
 Introns and intergenic regions were pulled out separately for C.virginica reference genome.
 Bedtools intersect with -f1 flag was used to get duplications completely within introns or intergenic region.
