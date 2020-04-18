@@ -17,8 +17,8 @@
 
 This step filters duplications identified by delly using the following criteria:
 
-    1. Duplications that are present in >90% of samples hence likely fixed in the population.   
-    2. Duplications that overlap >10% with a repeat region identified in the reference genome. 
+1. Duplications that are present in >90% of samples hence likely fixed in the population.   
+2. Duplications that overlap >10% with a repeat region identified in the reference genome. 
 
 Script: filter_dups.R
 
@@ -26,8 +26,8 @@ Script: filter_dups.R
 
 This step is used to characterize filtered duplications 
 
-    1. across locations
-    2. across genome
+1. across locations
+2. across genome
 
 Script 1: post_filtration_analyses.R 
 
@@ -37,7 +37,7 @@ Script 2: cnv_analyses.R
 
 This step annotates duplications using the reference genome annotation.
 
-    1. GO and KEGG annotation
-    2. Mapping duplications to different features in the genome
+1. GO and KEGG annotation
+2. Mapping duplications to different features in the genome
 
 Script: annotation_dups.R
