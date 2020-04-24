@@ -9,15 +9,25 @@ Repeats file from NCBI was preprocessed to make a bedfile of repeats as follows:
 Modify chromosome names to match gff3 to get Cvir_genome_repeats_mod.bed
 
 ```shell
- awk -v OFS='\t' 'NR>3{
-    print $5,$6,$7,$5"_"$7
- }' GCA_002022765.4_C_virginica-3.0_rm.out  | \
- sed -e 's/CM008241.1/NC_035780.1/g' -e 's/CM008242.1/NC_035781.1/g' \
-     -e 's/CM008243.1/NC_035782.1/g' -e 's/CM008244.1/NC_035783.1/g' \
-     -e 's/CM008245.1/NC_035784.1/g -e 's/CM008246.1/NC_035785.1/g'  \
-     -e 's/CM008247.1/NC_035786.1/g' -e 's/CM008248.1/NC_035787.1/g' \
-     -e 's/CM008249.1/NC_035788.1/g' -e 's/CM008250.1/NC_035789.1/g' \
-     > Cvir_genome_repeats_mod.bed
+ awk -v OFS='\t' 'BEGIN {
+     change["CM008241.1"] = "NC_035780.1"
+     change["CM008242.1"] = "NC_035781.1"
+     change["CM008243.1"] = "NC_035782.1"
+     change["CM008244.1"] = "NC_035783.1"
+     change["CM008245.1"] = "NC_035784.1"
+     change["CM008246.1"] = "NC_035785.1"
+     change["CM008247.1"] = "NC_035786.1"
+     change["CM008248.1"] = "NC_035787.1"
+     change["CM008249.1"] = "NC_035788.1"
+     change["CM008250.1"] = "NC_035789.1"
+ }
+ 
+ NR > 3 {
+    if ($5 in change)  {
+        $5 = change[$5]
+    }
+    print $5,$6,$7,$5"_"$6
+ }' GCA_002022765.4_C_virginica-3.0_rm.out  > Cvir_genome_repeats_mod.bed
 ```
 
 ##### BEDTools used to obtain overlap between duplications and repeats
