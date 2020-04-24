@@ -6,13 +6,19 @@
 ##### Duplications that overlap >10% with a repeat region were filtered from the analyses
 - [Repeats identified in C.virginica genome](ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/002/022/765/GCA_002022765.4_C_virginica-3.0)
 Repeats file from NCBI was preprocessed to make a bedfile of repeats as follows:
- `awk -v OFS='\t' 'NR>3{print $5,$6,$7,$5"_"$7}' GCA_002022765.4_C_virginica-3.0_rm.out >  Cvir_genome_repeats.bed`
-
 Modify chromosome names to match gff3 to get Cvir_genome_repeats_mod.bed
- `sed 's/CM008241.1/NC_035780.1/g' , sed 's/CM008242.1/NC_035781.1/g', sed 's/CM008243.1/NC_035782.1/g'` 
- `sed 's/CM008244.1/NC_035783.1/g', sed 's/CM008245.1/NC_035784.1/g, sed 's/CM008246.1/NC_035785.1/g'`
- `sed 's/CM008247.1/NC_035786.1/g', sed 's/CM008248.1/NC_035787.1/g', sed 's/CM008249.1/NC_035788.1/g'`
- `sed 's/CM008250.1/NC_035789.1/g'`
+
+```shell
+ awk -v OFS='\t' 'NR>3{
+    print $5,$6,$7,$5"_"$7
+ }' GCA_002022765.4_C_virginica-3.0_rm.out  | \
+ sed -e 's/CM008241.1/NC_035780.1/g' -e 's/CM008242.1/NC_035781.1/g' \
+     -e 's/CM008243.1/NC_035782.1/g' -e 's/CM008244.1/NC_035783.1/g' \
+     -e 's/CM008245.1/NC_035784.1/g -e 's/CM008246.1/NC_035785.1/g'  \
+     -e 's/CM008247.1/NC_035786.1/g' -e 's/CM008248.1/NC_035787.1/g' \
+     -e 's/CM008249.1/NC_035788.1/g' -e 's/CM008250.1/NC_035789.1/g' \
+     > Cvir_genome_repeats_mod.bed
+```
 
 ##### BEDTools used to obtain overlap between duplications and repeats
 Use bedtools merge to merge repeats as follows:
