@@ -35,6 +35,10 @@ colnames(map_dup) <- c("ID", "LOC")
 map_dup_fil <- map_dup %>% filter(map_dup$ID %in% oysterdup_fil$ID)
 # Get annotation for filtered duplications
 dup_annot <- left_join(map_dup_fil, ref_annot, by = "LOC") 
+# write annotation file
+dup_annot %>%  
+  write.table(here("annotation/dup_annot"), append = FALSE, sep = "\t",quote = TRUE,
+              row.names = F, col.names = TRUE)
 
 #### KEGG annotation for duplications ####
 #Extract LOC and XP_ID (protein_id) from gff3
@@ -49,11 +53,19 @@ dup_loc_xp <- left_join(map_dup_fil, ref_annot_prot, by="LOC")
 ref_annot_go_kegg <- read.table(here("annotation/XP_sequences_Cvirginica_GCF_002022765.2_GO.tab"), 
                                 sep="\t" , quote="", fill=FALSE, stringsAsFactors = FALSE, header = TRUE)
 colnames(ref_annot_go_kegg) <- c("Sequence_name","Sequence_length","Sequence_description","GO_ID","Enzyme_code","Enzyme_name")
-left_join(dup_loc_xp, ref_annot_go_kegg, by="Sequence_name") %>% head()
+dup_kegg <- left_join(dup_loc_xp, ref_annot_go_kegg, by="Sequence_name") %>% select(ID, Enzyme_code, Enzyme_name) %>% unique() 
+# write KEGG annotation file
+dup_kegg %>%  
+  write.table(here("annotation/dup_kegg"), append = FALSE, sep = "\t",quote = TRUE,
+              row.names = F, col.names = TRUE)
 
 #### GO annotation for duplications ####
 #Extract DUP_IDs, GO_IDs
 dup_go <- left_join(dup_loc_xp, ref_annot_go_kegg, by="Sequence_name") %>% select(ID, GO_ID) %>% unique() 
+# write GO annotation file
+dup_go %>%  
+  write.table(here("annotation/dup_go"), append = FALSE, sep = "\t",quote = TRUE,
+              row.names = F, col.names = TRUE)
 #separate the GO_IDs and get count for each
 go_vector <- as.data.frame(table(unlist(strsplit(as.character(dup_go$GO_ID), ";"))))
 go_vector_sorted <-  go_vector[order(go_vector$Freq, decreasing=TRUE),] 
