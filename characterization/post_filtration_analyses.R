@@ -56,8 +56,10 @@ levels(gtypesp2$pop) <- c("OBOYS2","UMFS","NEH","DEBY","LOLA" ,
                           "SL","CL","LM",
                           "HG","NG")  #reorder pops
 # Fig 2c from paper: Proportion of genotypes for duplications per population
-ggplot(gtypesp2,aes(genotype,number,color=pop))+geom_boxplot()#+
-  geom_point(position=position_jitterdodge(dodge.width=0.9))
+ggplot(gtypesp2,aes(genotype,number,color=pop))+geom_boxplot() + labs(x="Genotype", y="Proportion") + theme_classic() +
+  theme(axis.text.x  = element_text(size=14), axis.text.y  = element_text(size=14), 
+        axis.title.x  = element_text(face = "bold", size=16), axis.title.y  = element_text(face = "bold", size=16),
+        legend.title = element_blank())
 
 
 #### Duplication lengths ####
@@ -90,6 +92,8 @@ binaries <- pops %>%
 names(binaries) <- pops
 # have a look at the data
 head(binaries)  
+# how many duplications are present in more than 3 locations
+filter(binaries,rowSums(binaries)>3) %>% nrow() #6769 ie 6%
 # Fig 2b from paper: UpSet plot of the intersected duplications across locations
 upset(binaries, nsets = length(pops), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
       sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 2), order.by = "freq")
