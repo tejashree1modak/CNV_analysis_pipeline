@@ -68,7 +68,7 @@ oysterdup_fil <- read.table(here("characterization/oysterdup_fil"),
 # Fig 1a from paper: Frequency distribution of duplication lengths
 ggplot(oysterdup_fil, aes(length))+geom_histogram(binwidth = 60,fill="steelblue")+ylim(c(0,100))+
   xlim(c(0,10000)) + labs(x="Length of duplications", y="Frequency") + theme_classic() +
-  theme(axis.text.x  = element_text(size=18), axis.text.y  = element_text(size=18), axis.title.x  = element_text(face = "bold", size=20), axis.title.y  = element_text(face = "bold", size=20)) 
+  theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=12), axis.title.x  = element_text(face = "bold", size=12), axis.title.y  = element_text(face = "bold", size=12)) 
 # Fig 1b from paper: Distribution of duplication lengths per population
 pop_num_alts_present_fil <- read.table(here("characterization/pop_num_alts_present_fil"), 
               sep="\t" , stringsAsFactors = FALSE, header = TRUE)
