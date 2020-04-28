@@ -32,8 +32,16 @@ Modify chromosome names to match gff3 to get Cvir_genome_repeats_mod.bed
 
 ##### BEDTools used to obtain overlap between duplications and repeats
 Use bedtools merge to merge repeats as follows:
+
+```shell
 bedtools merge -i Cvir_genome_repeats_mod.bed -c 1,5 -o count,collapse > Cvir_genome_repeats_merged.bed
-Use bedtools using the -wo flag to obtain overlaps between merged repeats and dups
+```
+
+Use bedtools using the -wo flag to obtain overlaps between merged repeats and duplications
+
+```shell
 bedtools intersect -a oysterduplicate_sort.bed -b Cvir_repeats_merged.bed -wo > dup_repeat_merged_overlap_mod.bed
+```
+
 This file was used to filter duplications that overlap >10% with a repeat region.
 Use filter_repeats.R for this step. 
