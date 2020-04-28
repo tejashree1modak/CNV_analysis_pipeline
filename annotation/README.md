@@ -59,4 +59,4 @@ Introns and intergenic regions were pulled out separately for C.virginica refere
 Bedtools intersect with -f1 flag was used to get duplications completely within introns or intergenic region.
 Result: 2426 (21.4 %) dups overlap introns completely and 3336 (29.4%) overlap intergenic regions completely.
 
-These results are shown in Fig 6 in the paper: Percent duplications overlapping completely with different genomic features. 
+These results are shown in Fig 4 in the paper: Percent duplications overlapping completely with different genomic features. 
