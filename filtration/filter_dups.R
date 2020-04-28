@@ -14,20 +14,10 @@ for (i in c("tidyverse" , "here")) {
 #Repeatmasker output was obtained from the ftp server where C.virginica genome files are at
 #ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/002/022/765/GCA_002022765.4_C_virginica-3.0
 #The file is GCA_002022765.4_C_virginica-3.0_rm.out.gz
-#This was preprocessed to make a bedfile of repeats as follows:
-#awk -v OFS='\t' 'NR>3{print $5,$6,$7,$5"_"$7}' GCA_002022765.4_C_virginica-3.0_rm.out >  Cvir_genome_repeats.bed
-
-#Modify chromosome names to match gff3 and get Cvir_genome_repeats_mod.bed
-#sed 's/CM008241.1/NC_035780.1/g' , sed 's/CM008242.1/NC_035781.1/g', sed 's/CM008243.1/NC_035782.1/g', 
-#sed 's/CM008244.1/NC_035783.1/g', sed 's/CM008245.1/NC_035784.1/g, sed 's/CM008246.1/NC_035785.1/g', 
-#sed 's/CM008247.1/NC_035786.1/g', sed 's/CM008248.1/NC_035787.1/g', sed 's/CM008249.1/NC_035788.1/g', 
-#sed 's/CM008250.1/NC_035789.1/g',
+#This was preprocessed to make a bedfile of repeats as mentioned in README.md
   
 #Get overlap 
-#Use bedtools merge to merge repeats
-##bedtools merge -i Cvir_genome_repeats_mod.bed -c 1,5 -o count,collapse > Cvir_genome_repeats_merged.bed
-#Use bedtools using the -wo flag to obtain overlaps between merged repeats and dups
-#bedtools intersect -a oysterduplicate_sort.bed -b Cvir_repeats_merged.bed -wo > dup_repeat_merged_overlap_mod.bed
+#Use bedtools merge to merge repeats as mentioned in README.md
 ##################################################################################################
 
 #### Read in vcf file from delly ####
