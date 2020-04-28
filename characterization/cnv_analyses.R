@@ -45,7 +45,7 @@ cn_gtypes_long$cn <- as.numeric(as.character(cn_gtypes_long$cn))
 # Plot cnv per location per individual per chromosome in one plot
 #Chromosome 1
 cn_gtypes_long_chr1_fil <- filter(cn_gtypes_long, CHROM == "NC_035780.1") %>% select(POS, sample, cn)
-# Fig 5 from paper: Genome wide copy number variation profiles across 16 populations and 91 samples
+# Fig 3 from paper: Genome wide copy number variation profiles across 16 populations and 91 samples
 cn_chr1_hmap_fil <- ggplot(data = cn_gtypes_long_chr1_fil, mapping = aes(x = POS,y = sample,color = log(cn))) + 
   geom_point(aes(cex=cn/100)) + xlab(label = "Position")+ggtitle(label = "Chr 1") +
   scale_color_viridis_c(direction = -1, na.value = "#f6f7a4",limits = c(0, 10))
