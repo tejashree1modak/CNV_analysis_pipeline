@@ -69,7 +69,7 @@ dup_go %>%
 #separate the GO_IDs and get count for each
 go_vector <- as.data.frame(table(unlist(strsplit(as.character(dup_go$GO_ID), ";"))))
 go_vector_sorted <-  go_vector[order(go_vector$Freq, decreasing=TRUE),] 
-# Fig 8 from paper: Gene Ontology enrichment analysis for all duplications
+# Gene Ontology enrichment analysis for all duplications
 #go_vector was submitted on REVIGO (http://revigo.irb.hr/) for Fig8 
 #write.table(go_vector_sorted, (here("characterization/go_vector_sorted.txt"), append = FALSE, sep = " ",quote = FALSE,
 #            row.names = F, col.names = TRUE)
