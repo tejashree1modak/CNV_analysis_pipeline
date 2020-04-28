@@ -55,7 +55,7 @@ levels(gtypesp2$pop) <- c("OBOYS2","UMFS","NEH","DEBY","LOLA" ,
                           "HI","SM","HC","HCVA",  "CS", "CLP",
                           "SL","CL","LM",
                           "HG","NG")  #reorder pops
-# Fig 2c from paper: Proportion of genotypes for duplications per population
+# Fig 1b from paper: Proportion of genotypes for duplications per population
 ggplot(gtypesp2,aes(genotype,number,color=pop))+geom_boxplot() + labs(x="Genotype", y="Proportion") + theme_classic() +
   theme(axis.text.x  = element_text(size=14), axis.text.y  = element_text(size=14), 
         axis.title.x  = element_text(face = "bold", size=16), axis.title.y  = element_text(face = "bold", size=16),
@@ -65,15 +65,15 @@ ggplot(gtypesp2,aes(genotype,number,color=pop))+geom_boxplot() + labs(x="Genotyp
 #### Duplication lengths ####
 oysterdup_fil <- read.table(here("characterization/oysterdup_fil"), 
               sep="\t" , stringsAsFactors = FALSE, header = TRUE)
-# Fig 1a from paper: Frequency distribution of duplication lengths
+# Fig S1 from paper: Frequency distribution of duplication lengths
 ggplot(oysterdup_fil, aes(length))+geom_histogram(binwidth = 60,fill="steelblue")+ylim(c(0,100))+
   xlim(c(0,10000)) + labs(x="Length of duplications", y="Frequency") + theme_classic() +
   theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=12), axis.title.x  = element_text(face = "bold", size=12), axis.title.y  = element_text(face = "bold", size=12)) 
-# Fig 1b from paper: Distribution of duplication lengths per population
+# Distribution of duplication lengths per population
 pop_num_alts_present_fil <- read.table(here("characterization/pop_num_alts_present_fil"), 
               sep="\t" , stringsAsFactors = FALSE, header = TRUE)
 ggplot(pop_num_alts_present_fil, aes(pop,length)) +geom_violin() + ylim(c(0,2500))
-# Fig 1c from paper: Mean lengths of duplications compared across populations
+# Mean lengths of duplications compared across populations
 meanl <- group_by(pop_num_alts_present_fil,pop) %>% summarize(mean_len = mean(length),sd = sd(length))
 ggplot(meanl,aes(pop,mean_len))+geom_point()+
   geom_errorbar(aes(ymin=mean_len+sd,ymax=mean_len-sd))
@@ -104,7 +104,7 @@ pop_sum_fil <- data.frame(pop = names(binaries),total_dups=colSums(binaries))
 #get proportion of duplications by:
 # dividing total duplications per location by total number of duplications across locations
 pop_sum_fil$prop <- pop_sum_fil$total_dups/length(oysterdup_fil$ID)  #number of filtered dups are 11339 
-# Fig 2a from paper: Proportion of duplications per location
+# Fig 1a from paper: Proportion of duplications per location
 ggplot(pop_sum_fil, aes(x=pop,y=prop, color=pop)) + geom_bar(stat = "identity", fill="white") + 
   labs(x="Populations", y="Proportion of total duplications per population", title ="Post filteration") 
 #+ scale_color_manual(values=values,labels=labels)
@@ -140,7 +140,7 @@ binaries_NG <- samples_NG %>%
   map_dfc(~ ifelse(ids_NG %in% filter(gtypes_long_NG, sample == .x)$ID, 1, 0) %>% 
             as.data.frame)
 names(binaries_NG) <- samples_NG
-# Fig 3b from paper: UpSet plot of the intersected duplications among inbred populations
+# UpSet plot of the intersected duplications among inbred populations
 upset(binaries_HG, nsets = length(samples), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
       sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 2), order.by = "freq")
 upset(binaries_NG, nsets = length(samples_NG), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
@@ -177,8 +177,8 @@ pop_alts_per_chrom_len_fil <- left_join(pop_alts_per_chrom_fil, chrom_len, by = 
 pop_alts_per_chrom_len_fil$pop <- factor (as.character(pop_alts_per_chrom_len_fil$pop), 
                                           levels=c("HI","SM","CS","HC","HCVA","CLP","CL","SL","LM","UMFS","NEH","HG","NG","DEBY","LOLA","OBOYS2"))
 
-# Fig 4 from paper: Frequency of duplications per chromosome across locations normalized by chromosome length
-ggplot(pop_alts_per_chrom_len_fil, aes(x=CHROM,y=(num_alts/len), color=pop)) + geom_bar(stat = "identity", fill="white") + 
-  labs(x="Chromosome Number", y="Frequency of CNVs",title = "Post filteration")
-#+ scale_color_manual(values=values,labels=labels)
+# Fig 2 from paper: Frequency of duplications per chromosome across locations normalized by chromosome length
+ggplot(pop_alts_per_chrom_len_fil, aes(x=CHROM,y=(num_alts/len))) + geom_point(stat = "identity", fill="black") + 
+  labs(x="Chromosome Number", y="Frequency of CNVs")
+
 
