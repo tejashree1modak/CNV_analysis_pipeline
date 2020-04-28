@@ -5,7 +5,7 @@
 - [Reference genome](https://www.ncbi.nlm.nih.gov/genome/398)
 - Resequence data: 91 individuals of *C.virginica* across 16 locations along the eastern coast of the United States were sampled (details in the upcoming Genome paper).
 #### CNV discovery
-- **Software:** CNVs were called using default parameters in [DELLY2](https://github.com/dellytools/delly).
+- **Software:** CNVs were called using 'germline SV calling' with default parameters in [DELLY2](https://github.com/dellytools/delly).
 - **Requirements:** BAM files per sample and reference genome fasta. 
 - All steps performed as described in the Germline SV calling section.
 - Convert output file format from .bcf to .vcf using [bcftools](http://samtools.github.io/bcftools/bcftools.html#view). 
