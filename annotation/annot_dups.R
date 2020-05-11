@@ -58,6 +58,16 @@ dup_kegg <- left_join(dup_loc_xp, ref_annot_go_kegg, by="Sequence_name") %>% sel
 dup_kegg %>%  
   write.table(here("annotation/dup_kegg"), append = FALSE, sep = "\t",quote = TRUE,
               row.names = F, col.names = TRUE)
+#What % dups mapped to an EC number via kegg
+dup_kegg %>% filter(!is.na(Enzyme_name)) %>% filter(Enzyme_name != "") %>% nrow() # 10.84% (1230*100)/11339
+#separate the enzyme names and get count for each
+kegg_vector <- as.data.frame(table(unlist(strsplit(as.character(dup_kegg$Enzyme_name), ";"))))
+colnames(kegg_vector) <- c("Enzyme Name", "Number of duplications mapped")
+kegg_vector_sorted <-  kegg_vector[order(kegg_vector$Freq, decreasing=TRUE),] 
+#make a csv file for paper
+write.table(kegg_vector_sorted, here("annotation/dup_kegg_freq"), append = FALSE, sep = ",", quote = FALSE,
+            row.names = F, col.names = TRUE)
+
 
 #### GO annotation for duplications ####
 #Extract DUP_IDs, GO_IDs
