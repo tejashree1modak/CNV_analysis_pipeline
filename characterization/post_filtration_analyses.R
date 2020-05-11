@@ -180,5 +180,7 @@ pop_alts_per_chrom_len_fil$pop <- factor (as.character(pop_alts_per_chrom_len_fi
 # Fig 2 from paper: Frequency of duplications per chromosome across locations normalized by chromosome length
 ggplot(pop_alts_per_chrom_len_fil, aes(x=CHROM,y=(num_alts/len))) + geom_point(stat = "identity", fill="black") + 
   labs(x="Chromosome Number", y="Frequency of CNVs")
-
+ggplot(pop_alts_per_chrom_len_fil, aes(x=CHROM,y=(num_alts/len))) + geom_boxplot(aes(x=CHROM,y=(num_alts/len)), outlier.colour = "red", outlier.shape = 1) + labs(x="Chromosome Number", y="Frequency of CNVs") + theme_classic() +
+  +     theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=12), axis.title.x  = element_text(face = "bold", size=16), axis.title.y  = element_text(face = "bold", size=16)) + 
+  +     scale_x_discrete(labels=c("NC_035780.1"= "1","NC_035781.1"="2","NC_035782.1"="3","NC_035783.1"="4","NC_035784.1"="5","NC_035785.1"="6", "NC_035786.1"="7", "NC_035787.1"="8","NC_035788.1"="9","NC_035789.1"="10"))
 
