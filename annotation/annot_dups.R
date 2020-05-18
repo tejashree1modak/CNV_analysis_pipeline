@@ -62,7 +62,7 @@ dup_kegg %>%
 dup_kegg %>% filter(!is.na(Enzyme_name)) %>% filter(Enzyme_name != "") %>% nrow() # 10.84% (1230*100)/11339
 #separate the enzyme names and get count for each
 kegg_vector <- as.data.frame(table(unlist(strsplit(as.character(dup_kegg$Enzyme_name), ";"))))
-colnames(kegg_vector) <- c("Enzyme Name", "Number of duplications mapped")
+colnames(kegg_vector) <- c("Enzyme Name", "Number of genes mapped")
 kegg_vector_sorted <-  kegg_vector[order(kegg_vector$Freq, decreasing=TRUE),] 
 #make a csv file for paper
 write.table(kegg_vector_sorted, here("annotation/dup_kegg_freq"), append = FALSE, sep = ",", quote = FALSE,
