@@ -176,11 +176,41 @@ pop_alts_per_chrom_fil <- pop_num_pos_alts_present_chrom_fil %>% group_by(pop,CH
 pop_alts_per_chrom_len_fil <- left_join(pop_alts_per_chrom_fil, chrom_len, by = "CHROM")
 pop_alts_per_chrom_len_fil$pop <- factor (as.character(pop_alts_per_chrom_len_fil$pop), 
                                           levels=c("HI","SM","CS","HC","HCVA","CLP","CL","SL","LM","UMFS","NEH","HG","NG","DEBY","LOLA","OBOYS2"))
+# ANOVA for frequency of CNVs per chromosome
+res_aov <- aov(num_alts ~ CHROM, data = pop_alts_per_chrom_fil)
+summary(res_aov)
+res_tuk <- TukeyHSD(res_aov)
+#shows chr5 has significantly higher freq of cnv than any other chr
+res_tuk_df <- as.data.frame(res_tuk$CHROM) 
 
 # Fig 2 from paper: Frequency of duplications per chromosome across locations normalized by chromosome length
-ggplot(pop_alts_per_chrom_len_fil, aes(x=CHROM,y=(num_alts/len))) + geom_point(stat = "identity", fill="black") + 
-  labs(x="Chromosome Number", y="Frequency of CNVs")
-ggplot(pop_alts_per_chrom_len_fil, aes(x=CHROM,y=(num_alts/len))) + geom_boxplot(aes(x=CHROM,y=(num_alts/len)), outlier.colour = "red", outlier.shape = 1) + labs(x="Chromosome Number", y="Frequency of CNVs") + theme_classic() +
-  +     theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=12), axis.title.x  = element_text(face = "bold", size=16), axis.title.y  = element_text(face = "bold", size=16)) + 
-  +     scale_x_discrete(labels=c("NC_035780.1"= "1","NC_035781.1"="2","NC_035782.1"="3","NC_035783.1"="4","NC_035784.1"="5","NC_035785.1"="6", "NC_035786.1"="7", "NC_035787.1"="8","NC_035788.1"="9","NC_035789.1"="10"))
-
+freq_cnv <- pop_alts_per_chrom_len_fil %>% mutate(cnv_freq_norm = (num_alts/len)) %>% select(pop, CHROM, cnv_freq_norm)
+is_outlier <- function(x) {
+  return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+}
+freq_cnv2 <- freq_cnv %>% group_by(CHROM) %>% 
+  mutate(outlier = ifelse(is_outlier(cnv_freq_norm), cnv_freq_norm, as.numeric(NA))) 
+freq_cnv2$pop[which(is.na(freq_cnv2$outlier))] <- as.numeric(NA)
+freq_cnv2 <- freq_cnv2 %>%
+  mutate(inbred_st = case_when(pop == 'HG' ~ 'inbred',
+                               pop == 'NG' ~ 'inbred',
+                               pop == 'CL' ~ 'nt_inbred',
+                               pop == 'NEH' ~ 'nt_inbred',
+                               pop == 'LM' ~ 'nt_inbred',
+                               pop == 'OBOYS2' ~ 'nt_inbred',
+                               pop == 'SL' ~ 'nt_inbred'))
+freq_cnv2$inbred_st <- as.factor(freq_cnv2$inbred_st)
+freq_cnv3 <- freq_cnv2 %>% 
+  mutate(outlier_inbred = case_when(inbred_st == 'inbred' ~ outlier, TRUE ~ NA_real_), 
+         outlier_nt_inbred = case_when(inbred_st == 'nt_inbred' ~ outlier, TRUE ~ NA_real_))
+ggplot(freq_cnv3, aes(x=CHROM,y=cnv_freq_norm)) + 
+  geom_boxplot(outlier.shape = NA) + 
+  geom_point(aes(x=CHROM,y=outlier_inbred), shape=17, size=2)+
+  geom_jitter(aes(x=CHROM,y=outlier_nt_inbred), shape=15, size=2)+
+  labs(x="Chromosome Number", y="Frequency of CNVs") + theme_classic() +
+  theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=12), 
+        axis.title.x  = element_text(face = "bold", size=16), 
+        axis.title.y  = element_text(face = "bold", size=16)) + 
+  scale_x_discrete(labels=c("NC_035780.1"= "1","NC_035781.1"="2","NC_035782.1"="3","NC_035783.1"="4",
+                            "NC_035784.1"="5","NC_035785.1"="6", "NC_035786.1"="7", "NC_035787.1"="8",
+                            "NC_035788.1"="9","NC_035789.1"="10"))
