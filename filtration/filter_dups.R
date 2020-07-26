@@ -22,20 +22,16 @@ for (i in c("tidyverse" , "here")) {
 
 #### Read in vcf file from delly ####
 #all vcf data for each individual for each duplication obtained from DELLY in a vcf format
-oysterdup <- read.table(here("filtration/germline_nohead_dup.vcf"),stringsAsFactors = FALSE)
+oysterdup <- read.table(here("filtration/germline_nosel_nohead_dup.vcf"),stringsAsFactors = FALSE)
 header <- strsplit("CHROM POS ID      REF     ALT     QUAL    FILTER  
                    INFO    FORMAT  CL_1    CL_2    CL_3    CL_4    CL_5    CL_6    CLP_1   CLP_2   
                    CLP_3   CLP_4   CLP_5   CLP_6   CS_1    CS_2    CS_3    CS_5    CS_6    CS_7    
-                   DEBY_1  DEBY_2  DEBY_3  DEBY_4  DEBY_5  DEBY_6  HC_1    HC_3    HC_4    HC_5    
-                   HC_6    HC_7    HCVA_1 HCVA_2 HCVA_3 HCVA_4 HCVA_5 HCVA_6 HG_HG0F2       
+                   HC_1    HC_3    HC_4    HC_5    HC_6    HC_7    HCVA_1 HCVA_2 HCVA_3 HCVA_4 HCVA_5 HCVA_6 HG_HG0F2       
                    HG_HG2F1        HG_HG2M5
                    HI_1    HI_2    HI_3    HI_4    HI_5    HI_6    LM_1_pool       LM_3    LM_4    
-                   LM_7    LM_8    LOLA_1  LOLA_2  LOLA_3  LOLA_4  LOLA_5  LOLA_6  NEH_1   NEH_2   
-                   NEH_3   NEH_4   NEH_5   NEH_6   NG_NH0H4        NG_NH2F6        NG_NH2F8        
-                   NG_NH2M1        OBOYS2_1        OBOYS2_2        OBOYS2_3        OBOYS2_4        
-                   OBOYS2_5        OBOYS2_6        SL_1    SL_2    SL_3    SL_4    SL_5    SL_6
-                   SM_10   SM_11   SM_12   SM_7    SM_8    SM_9    UMFS_1  UMFS_2  UMFS_3  UMFS_4  
-                   UMFS_5  UMFS_6", "\\s+")[[1]]
+                   LM_7    LM_8    NG_NH0H4        NG_NH2F6        NG_NH2F8        
+                   NG_NH2M1        SL_1    SL_2    SL_3    SL_4    SL_5    SL_6
+                   SM_10   SM_11   SM_12   SM_7    SM_8    SM_9", "\\s+")[[1]]
 colnames(oysterdup)<-header
 oysterdup <-dplyr::filter(oysterdup,FILTER=="PASS")
 oysterdup$end <- str_split(oysterdup$INFO, ';') %>%
@@ -53,7 +49,7 @@ getg <- function(bedout_col){
   str_split( bedout_col, ':') %>% map_chr(1)
 }
 
-gtypes_only <- map_dfr(select(oysterdup,CL_1:UMFS_6),getg)
+gtypes_only <- map_dfr(select(oysterdup,CL_1:SM_9),getg)
 gtypes_only$ID <- oysterdup$ID
 gtypes_long <- gather(gtypes_only,key=sample,value=gtype,-ID)
 gtypes_long$pop <- str_split(gtypes_long$sample,'_') %>% map(1) %>% as.character()
@@ -74,13 +70,13 @@ pop_num_alts_present <- filter(pop_num_alts,num_alts >0)
 
 #### Filter 1: Fixed duplications ####
 #Get dups common to all populations since they are likely artifacts 
-common_dups <- pop_num_alts_present %>% group_by(ID) %>% tally(sort = TRUE) %>% head(961) %>% select(ID)
+common_dups <- pop_num_alts_present %>% group_by(ID) %>% tally(sort = TRUE) %>% head(1046) %>% select(ID)
 #Get dups common to all populations but present in all samples of each population
 sample_num_alts <- gtypes_long %>% filter(!is.na(num_alts)) %>% filter(num_alts >0)
 #Criteria for filteration of common dups: 
-#Out of the 961 dups that are present in all populations how many are present in >90% samples (i.e. in 81 samples) 
+#Out of the 1046 dups that are present in all populations how many are present in >90% samples (i.e. in 54 samples) 
 common_filter_dups <- 
-  semi_join(sample_num_alts,common_dups, by="ID") %>% group_by(ID) %>% summarize(count=n()) %>% filter(count > 81) %>% select("ID")
+  semi_join(sample_num_alts,common_dups, by="ID") %>% group_by(ID) %>% summarize(count=n()) %>% filter(count > 54) %>% select("ID")
 
 #### Filter 2: Duplications in repeat regions ####
 # Read in bedtools Ouput of intersect between repeat regions in reference genome and duplications  
@@ -106,20 +102,22 @@ filter_dups <- rbind(common_filter_dups, repeat_filter_dups) %>% distinct()
 cvir_dup_bed <- oysterdup %>% select(CHROM,POS,end,ID)
 colnames(cvir_dup_bed) <- c("CHROM","start","stop","ID")
 # Number of duplications post filtration
-cvir_dups_fil_bed <- anti_join(cvir_dup_bed,filter_dups) %>% group_by(ID) %>% summarize(count=n()) %>% nrow() #11339 
+anti_join(cvir_dup_bed,filter_dups) %>% group_by(ID) %>% summarize(count=n()) %>% nrow() #11349 
+cvir_dups_fil_bed <- anti_join(cvir_dup_bed,filter_dups)
 
 # Output files:
 # These files are read in for further characterization of duplications
 #Write the files if needed. Files already available in the dir for use.
 # FILE 1: BEDFILE of filtered duplications
-#cvir_dups_fil_bed %>%
+# cvir_dups_fil_bed %>%
 #  write.table(here("filtration/cvir_filtered_dups.bed"), append = FALSE, sep = "\t",quote = FALSE,
 #              row.names = F, col.names = FALSE)
 # FILE 2: VCF of filtered duplications
 oysterdup_fil <- anti_join(oysterdup, filter_dups)
-oysterdup_fil %>%  
-  write.table(here("filtration/oysterdup_fil"), append = FALSE, sep = "\t",quote = TRUE,
-                                             row.names = F, col.names = TRUE)
+# oysterdup_fil %>%
+#  write.table(here("filtration/oysterdup_fil"), append = FALSE, sep = "\t",quote = TRUE,
+#                                             row.names = F, col.names = TRUE)
+
 # FILE 3: population counts of filtered duplications
 pop_num_alts_present_fil <- anti_join(pop_num_alts_present,filter_dups)
 pop_num_alts_present_fil %>% 
