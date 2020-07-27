@@ -13,20 +13,22 @@ for (i in c("UpSetR","tidyverse","here")) {
 # Merged duplications to avoid counting overlapping duplication multiple times
 # The output of filter_dups.R is used as input for bedtools
 # bedtools merge -i cvir_filtered_dups.bed -c 1,2,3 -o count,collapse,collapse  > characterization/cvir_filtered_dups_merged.bed
-dups_fil_merged <- read.table(here("characterization/cvir_filtered_dups_merged.bed"), 
+dups_fil_merged <- read.table(here("characterization/cvir_filtered_nosel_dups_merged.bed"), 
                               sep="\t" , stringsAsFactors = FALSE)
 colnames(dups_fil_merged) <- c("CHROM", "POS","end","count","POS_collapse","end_collapse")
 # Length of merged dups
 dups_fil_merged$len <- (dups_fil_merged$end - dups_fil_merged$POS) + 1
 #Total number of bases of all duplications
-sum(dups_fil_merged$len) #118732426
+sum(dups_fil_merged$len) #118781869
 # % of genome covered by duplications
 # Genome size of C.virginica genome can be found at https://www.ncbi.nlm.nih.gov/genome/398
 (sum(dups_fil_merged$len)/684000000)*100 #17% 
 # basic stats
-median(dups_fil_merged$len)
-mean(dups_fil_merged$len)
+median(dups_fil_merged$len) #893
+mean(dups_fil_merged$len) #15928.91
 summary(dups_fil_merged$len)
+#basic stats for LSDs (dups>1kb)
+dups_fil_merged %>% filter(len > 1000) %>% select(len) %>% summary()
 
 
 #### Genotypes for Duplication  ####
@@ -40,7 +42,7 @@ gett <- function(bedout_col){
   table(g2)
 }
 #run above function on all samples (columns)
-gtypes <- select(oysterdup_fil,CL_1:UMFS_6) %>% map_dfr(gett)
+gtypes <- select(oysterdup_fil,CL_1:SM_9) %>% map_dfr(gett)
 gtypes2 <-as.data.frame(t(gtypes))
 colnames(gtypes2) <- c("./.", "0/0",  "0/1",  "1/1")
 gtypes2$pop <- map_chr(str_split(rownames(gtypes2),"_"),1) #add pop info (no sample num)
@@ -51,11 +53,10 @@ gtypes_p <- gtypes2 %>% mutate(sum=rowSums(select(gtypes2,("0/0":"1/1")))) %>%
   mutate(p1 = gtypes2$"1/1"/sum) %>% select(pop,p0,p01,p1)
 gtypesp2 <- gather(gtypes_p,genotype,number,-pop)
 gtypesp2$pop <- as.factor(gtypesp2$pop)
-levels(gtypesp2$pop) <- c("OBOYS2","UMFS","NEH","DEBY","LOLA" ,
-                          "HI","SM","HC","HCVA",  "CS", "CLP",
+levels(gtypesp2$pop) <- c("HI","SM","HC","HCVA",  "CS", "CLP",
                           "SL","CL","LM",
                           "HG","NG")  #reorder pops
-# Fig 1b from paper: Proportion of genotypes for duplications per population
+# Proportion of genotypes for duplications per population
 ggplot(gtypesp2,aes(genotype,number,color=pop))+geom_boxplot() + labs(x="Genotype", y="Proportion") + theme_classic() +
   theme(axis.text.x  = element_text(size=14), axis.text.y  = element_text(size=14), 
         axis.title.x  = element_text(face = "bold", size=16), axis.title.y  = element_text(face = "bold", size=16),
@@ -93,7 +94,7 @@ names(binaries) <- pops
 # have a look at the data
 head(binaries)  
 # how many duplications are present in more than 3 locations
-filter(binaries,rowSums(binaries)>3) %>% nrow() #6769 ie 6%
+filter(binaries,rowSums(binaries)>3) %>% nrow() #5954 ie 52%
 # Fig 2b from paper: UpSet plot of the intersected duplications across locations
 upset(binaries, nsets = length(pops), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
       sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 2), order.by = "freq")
@@ -103,7 +104,7 @@ pop_sum_fil <- as.data.frame(colSums(binaries))
 pop_sum_fil <- data.frame(pop = names(binaries),total_dups=colSums(binaries))
 #get proportion of duplications by:
 # dividing total duplications per location by total number of duplications across locations
-pop_sum_fil$prop <- pop_sum_fil$total_dups/length(oysterdup_fil$ID)  #number of filtered dups are 11339 
+pop_sum_fil$prop <- pop_sum_fil$total_dups/length(oysterdup_fil$ID)  #number of filtered dups are 11349 
 # Fig 1a from paper: Proportion of duplications per location
 ggplot(pop_sum_fil, aes(x=pop,y=prop, color=pop)) + geom_bar(stat = "identity", fill="white") + 
   labs(x="Populations", y="Proportion of total duplications per population", title ="Post filteration") 
@@ -114,7 +115,7 @@ getg <- function(bedout_col){
   str_split( bedout_col, ':') %>% map_chr(1)
 }
 
-gtypes_only_fil <- map_dfr(select(oysterdup_fil,CL_1:UMFS_6),getg)
+gtypes_only_fil <- map_dfr(select(oysterdup_fil,CL_1:SM_9),getg)
 gtypes_only_fil$ID <- oysterdup_fil$ID
 gtypes_long_fil <- gather(gtypes_only_fil,key=sample,value=gtype,-ID)
 gtypes_long_fil$pop <- str_split(gtypes_long_fil$sample,'_') %>% map(1) %>% as.character()
@@ -156,7 +157,7 @@ chrom_len <- data.frame(CHROM=c("NC_035780.1","NC_035781.1","NC_035782.1","NC_03
                         end=c(65668440,61752955,77061148,59691872,98698416,51258098,57830854,75944018,104168038,32650045))
 chrom_len$len <- chrom_len$end - chrom_len$start
 #get frequency of duplications per location
-gtypes_pos_fil <- map_dfr(select(oysterdup_fil,CL_1:UMFS_6),getg)
+gtypes_pos_fil <- map_dfr(select(oysterdup_fil,CL_1:SM_9),getg)
 gtypes_pos_fil$POS <- oysterdup_fil$POS
 gtypes_pos_long_fil <- gather(gtypes_pos_fil,key=sample,value=gtype,-POS)
 gtypes_pos_long_fil$pop <- str_split(gtypes_pos_long_fil$sample,'_') %>% map(1) %>% as.character()
@@ -175,7 +176,7 @@ pop_alts_per_chrom_fil <- pop_num_pos_alts_present_chrom_fil %>% group_by(pop,CH
   summarize(num_alts = sum(num_alts)) 
 pop_alts_per_chrom_len_fil <- left_join(pop_alts_per_chrom_fil, chrom_len, by = "CHROM")
 pop_alts_per_chrom_len_fil$pop <- factor (as.character(pop_alts_per_chrom_len_fil$pop), 
-                                          levels=c("HI","SM","CS","HC","HCVA","CLP","CL","SL","LM","UMFS","NEH","HG","NG","DEBY","LOLA","OBOYS2"))
+                                          levels=c("HI","SM","CS","HC","HCVA","CLP","CL","SL","LM","HG","NG"))
 # ANOVA for frequency of CNVs per chromosome
 res_aov <- aov(num_alts ~ CHROM, data = pop_alts_per_chrom_fil)
 summary(res_aov)
@@ -195,9 +196,7 @@ freq_cnv2 <- freq_cnv2 %>%
   mutate(inbred_st = case_when(pop == 'HG' ~ 'inbred',
                                pop == 'NG' ~ 'inbred',
                                pop == 'CL' ~ 'nt_inbred',
-                               pop == 'NEH' ~ 'nt_inbred',
                                pop == 'LM' ~ 'nt_inbred',
-                               pop == 'OBOYS2' ~ 'nt_inbred',
                                pop == 'SL' ~ 'nt_inbred'))
 freq_cnv2$inbred_st <- as.factor(freq_cnv2$inbred_st)
 freq_cnv3 <- freq_cnv2 %>% 
