@@ -17,7 +17,7 @@ oysterdup_fil <- read.table(here("filtration/oysterdup_fil"),
 getcn <- function(bedout_col){
   str_split( bedout_col, ':') %>% map_chr(8)
 }
-cn_only <- map_dfr(select(oysterdup_fil,CL_1:UMFS_6),getcn)
+cn_only <- map_dfr(select(oysterdup_fil,CL_1:SM_9),getcn)
 cn_only$ID <- oysterdup_fil$ID
 cn_only$POS <- oysterdup_fil$POS
 cn_only$CHROM <- oysterdup_fil$CHROM
@@ -25,7 +25,7 @@ cn_only$CHROM <- oysterdup_fil$CHROM
 getg <- function(bedout_col){
   str_split( bedout_col, ':') %>% map_chr(1)
 }
-gtypes_only <- map_dfr(select(oysterdup,CL_1:UMFS_6),getg)
+gtypes_only <- map_dfr(select(oysterdup,CL_1:SM_9),getg)
 gtypes_only$ID <- oysterdup$ID
 #pulling out gtype and cn for each pop side by side to visually compare
 gtypes_cn <- left_join(cn_only, gtypes_only, by = 'ID') 
@@ -45,7 +45,7 @@ cn_gtypes_long$cn <- as.numeric(as.character(cn_gtypes_long$cn))
 # Plot cnv per location per individual per chromosome in one plot
 #Chromosome 1
 cn_gtypes_long_chr1_fil <- filter(cn_gtypes_long, CHROM == "NC_035780.1") %>% select(POS, sample, cn)
-# Fig 3 from paper: Genome wide copy number variation profiles across 16 populations and 91 samples
+# Fig 3 from paper: Genome wide copy number variation profiles across 11 locations and 60 samples
 cn_chr1_hmap_fil <- ggplot(data = cn_gtypes_long_chr1_fil, mapping = aes(x = POS,y = sample,color = log(cn))) + 
   geom_point(aes(cex=cn/100)) + xlab(label = "Position")+ggtitle(label = "Chr 1") +
   scale_color_viridis_c(direction = -1, na.value = "#f6f7a4",limits = c(0, 10))
