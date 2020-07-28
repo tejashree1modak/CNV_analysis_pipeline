@@ -80,7 +80,7 @@ common_filter_dups <-
 
 #### Filter 2: Duplications in repeat regions ####
 # Read in bedtools Ouput of intersect between repeat regions in reference genome and duplications  
-dup_repeat_overlap <- read.table(here("filtration/dup_repeat_merged_overlap_mod.bed"), 
+dup_repeat_overlap <- read.table(here("filtration/dup_repeat_merged_overlap_mod_nosel"), 
                                  sep="\t" , stringsAsFactors = FALSE)
 colnames(dup_repeat_overlap) <- c("CHROM", "POS","end","ID","R_POS","R_end","R_ID","l")
 #Number of repeats mapped to each duplicate
@@ -92,7 +92,7 @@ colnames(overlap_total_len) <- c("ID","total_len")
 percent_overlap <- oysterdup %>% select(ID,length) %>% left_join(overlap_total_len,by = 'ID') %>% na.omit() 
 percent_overlap$percent <- (percent_overlap$total_len/percent_overlap$length)*100
 #dups with >10% repeat coverage
-percent_overlap %>% filter(percent > 10) %>% nrow() #filter out 1778 dups
+percent_overlap %>% filter(percent > 10) %>% nrow() #filter out 1641 dups
 repeat_filter_dups <- percent_overlap %>% filter(percent > 10) %>% select("ID")
 
 #### Get final set of duplications post filtration ####
@@ -102,7 +102,7 @@ filter_dups <- rbind(common_filter_dups, repeat_filter_dups) %>% distinct()
 cvir_dup_bed <- oysterdup %>% select(CHROM,POS,end,ID)
 colnames(cvir_dup_bed) <- c("CHROM","start","stop","ID")
 # Number of duplications post filtration
-anti_join(cvir_dup_bed,filter_dups) %>% group_by(ID) %>% summarize(count=n()) %>% nrow() #11349 
+anti_join(cvir_dup_bed,filter_dups) %>% group_by(ID) %>% summarize(count=n()) %>% nrow() #11486 
 cvir_dups_fil_bed <- anti_join(cvir_dup_bed,filter_dups)
 
 # Output files:
@@ -120,6 +120,6 @@ oysterdup_fil <- anti_join(oysterdup, filter_dups)
 
 # FILE 3: population counts of filtered duplications
 pop_num_alts_present_fil <- anti_join(pop_num_alts_present,filter_dups)
-pop_num_alts_present_fil %>% 
-  write.table(here("filtration/pop_num_alts_present_fil"), append = FALSE, sep = "\t",quote = FALSE,
-                                         row.names = F, col.names = TRUE)
+# pop_num_alts_present_fil %>%
+#   write.table(here("filtration/pop_num_alts_present_fil"), append = FALSE, sep = "\t",quote = FALSE,
+#                                          row.names = F, col.names = TRUE)
