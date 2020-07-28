@@ -13,7 +13,7 @@ for (i in c("UpSetR","tidyverse","here")) {
 # Merged duplications to avoid counting overlapping duplication multiple times
 # The output of filter_dups.R is used as input for bedtools
 # bedtools merge -i cvir_filtered_dups.bed -c 1,2,3 -o count,collapse,collapse  > characterization/cvir_filtered_dups_merged.bed
-dups_fil_merged <- read.table(here("characterization/cvir_filtered_nosel_dups_merged.bed"), 
+dups_fil_merged <- read.table(here("characterization/cvir_filtered_dups_merged.bed"), 
                               sep="\t" , stringsAsFactors = FALSE)
 colnames(dups_fil_merged) <- c("CHROM", "POS","end","count","POS_collapse","end_collapse")
 # Length of merged dups
