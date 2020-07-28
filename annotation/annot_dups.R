@@ -29,7 +29,7 @@ ref_annot <- read.table("annotation/ref_annot",
                         sep="\t" , quote="", fill=FALSE, stringsAsFactors = FALSE)
 colnames(ref_annot) <- c("LOC", "annot")
 # Read in bed file of dups mapped to LOCs from ref genome
-map_dup <- read.table("annotation/Oyster_Dup_gene", sep="\t" , stringsAsFactors = FALSE)
+map_dup <- read.table("annotation/Oyster_dup_gene_nosel", sep="\t" , stringsAsFactors = FALSE)
 colnames(map_dup) <- c("ID", "LOC")
 # Keep those duplications that passed the filter
 map_dup_fil <- map_dup %>% filter(map_dup$ID %in% oysterdup_fil$ID)
@@ -59,11 +59,17 @@ dup_kegg %>%
   write.table(here("annotation/dup_kegg"), append = FALSE, sep = "\t",quote = TRUE,
               row.names = F, col.names = TRUE)
 #What % dups mapped to an EC number via kegg
-dup_kegg %>% filter(!is.na(Enzyme_name)) %>% filter(Enzyme_name != "") %>% nrow() # 10.84% (1230*100)/11339
+dup_kegg %>% filter(!is.na(Enzyme_name)) %>% filter(Enzyme_name != "") %>% nrow() # 10.08% (1144*100)/11339
 #separate the enzyme names and get count for each
 kegg_vector <- as.data.frame(table(unlist(strsplit(as.character(dup_kegg$Enzyme_name), ";"))))
 colnames(kegg_vector) <- c("Enzyme Name", "Number of genes mapped")
-kegg_vector_sorted <-  kegg_vector[order(kegg_vector$Freq, decreasing=TRUE),] 
+kegg_vector_sorted <-  kegg_vector[order(kegg_vector$`Number of genes mapped`, decreasing=TRUE),] 
+kegg_vector2 <- dup_kegg %>% filter(Enzyme_name == "Acting on peptide bonds (peptidases)") 
+kegg_vector2 <- as.data.frame(table(unlist(strsplit(as.character(kegg_vector2$Enzyme_code), ";"))))
+colnames(kegg_vector2) <- c("Enzyme Code", "Number of genes mapped")
+kegg_vector2 <-  kegg_vector2[order(kegg_vector2$`Number of genes mapped`, decreasing=TRUE),] 
+#top3 enzymes EC:3.4.24 = metalloendopeptidases,EC:3.4.22=cysteine endopeptidases ,EC:3.4.21 = serine endopeptidases
+
 #make a csv file for paper
 write.table(kegg_vector_sorted, here("annotation/dup_kegg_freq"), append = FALSE, sep = ",", quote = FALSE,
             row.names = F, col.names = TRUE)
@@ -79,7 +85,19 @@ dup_go %>%
 #separate the GO_IDs and get count for each
 go_vector <- as.data.frame(table(unlist(strsplit(as.character(dup_go$GO_ID), ";"))))
 go_vector_sorted <-  go_vector[order(go_vector$Freq, decreasing=TRUE),] 
-# Gene Ontology enrichment analysis for all duplications
-#go_vector was submitted on REVIGO (http://revigo.irb.hr/) for Fig8 
+#write
 #write.table(go_vector_sorted, (here("characterization/go_vector_sorted.txt"), append = FALSE, sep = " ",quote = FALSE,
 #            row.names = F, col.names = TRUE)
+
+# Gene Ontology enrichment analysis for all duplications was done using topGO in topGO.R script
+#write files for topGO: 
+#interestinggenes.txt
+left_join(dup_loc_xp, ref_annot_go_kegg, by="Sequence_name") %>% 
+  select(Sequence_name) %>% unique() %>% 
+  write.table(here("annotation/interestinggenes.txt"), append = FALSE, 
+              sep = "\t",quote = F,row.names = F, col.names = F)
+#Gene Universe
+ref_annot_go_kegg %>% select(Sequence_name,GO_ID) %>% 
+  write.table(here("annotation/annotations.txt"), append = FALSE, sep = "\t",quote = F,row.names = F, col.names = F)
+#Use sed 's/;/,/g' annotations.txt > annotations_topgo.txt to convert it to format required by topGO
+# USe topgo_pipe.R to get enrichment results
