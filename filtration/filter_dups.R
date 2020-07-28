@@ -80,7 +80,7 @@ common_filter_dups <-
 
 #### Filter 2: Duplications in repeat regions ####
 # Read in bedtools Ouput of intersect between repeat regions in reference genome and duplications  
-dup_repeat_overlap <- read.table(here("filtration/dup_repeat_merged_overlap_mod_nosel"), 
+dup_repeat_overlap <- read.table(here("filtration/dup_repeat_merged_overlap_mod.bed"), 
                                  sep="\t" , stringsAsFactors = FALSE)
 colnames(dup_repeat_overlap) <- c("CHROM", "POS","end","ID","R_POS","R_end","R_ID","l")
 #Number of repeats mapped to each duplicate
