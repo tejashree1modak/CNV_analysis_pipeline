@@ -22,7 +22,7 @@ for (i in c("tidyverse" , "here")) {
 
 #### Read in vcf file from delly ####
 #all vcf data for each individual for each duplication obtained from DELLY in a vcf format
-oysterdup <- read.table(here("filtration/germline_nosel_nohead_dup.vcf"),stringsAsFactors = FALSE)
+oysterdup <- read.table(here("filtration/germline_nohead_dup.vcf"),stringsAsFactors = FALSE)
 header <- strsplit("CHROM POS ID      REF     ALT     QUAL    FILTER  
                    INFO    FORMAT  CL_1    CL_2    CL_3    CL_4    CL_5    CL_6    CLP_1   CLP_2   
                    CLP_3   CLP_4   CLP_5   CLP_6   CS_1    CS_2    CS_3    CS_5    CS_6    CS_7    
