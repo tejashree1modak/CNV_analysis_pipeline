@@ -29,7 +29,7 @@ ref_annot <- read.table("annotation/ref_annot",
                         sep="\t" , quote="", fill=FALSE, stringsAsFactors = FALSE)
 colnames(ref_annot) <- c("LOC", "annot")
 # Read in bed file of dups mapped to LOCs from ref genome
-map_dup <- read.table("annotation/Oyster_dup_gene_nosel", sep="\t" , stringsAsFactors = FALSE)
+map_dup <- read.table("annotation/Oyster_Dup_gene", sep="\t" , stringsAsFactors = FALSE)
 colnames(map_dup) <- c("ID", "LOC")
 # Keep those duplications that passed the filter
 map_dup_fil <- map_dup %>% filter(map_dup$ID %in% oysterdup_fil$ID)
