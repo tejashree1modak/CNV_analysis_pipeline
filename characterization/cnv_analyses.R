@@ -48,9 +48,16 @@ cn_gtypes_long_chr1_fil <- filter(cn_gtypes_long, CHROM == "NC_035780.1") %>% se
 # Fig 3 from paper: Genome wide copy number variation profiles across 11 locations and 60 samples
 cn_chr1_hmap_fil <- ggplot(data = cn_gtypes_long_chr1_fil, mapping = aes(x = POS,y = sample,color = log(cn))) + 
   geom_point(aes(cex=cn/100)) + xlab(label = "Position")+ggtitle(label = "Chr 1") +
-  scale_color_viridis_c(direction = -1, na.value = "#f6f7a4",limits = c(0, 10))
+  scale_color_viridis_c(direction = -1, na.value = "#f6f7a4",limits = c(0, 10)) +
+  theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=12), 
+        axis.title.x  = element_text(face = "bold", size=16), 
+        axis.title.y  = element_text(face = "bold", size=16))
 #+ scale_fill_manual(labels=sample_lables)
 cn_chr1_hmap_fil + geom_vline(xintercept = (65668439/2), color = "red", size=0.3) #+ scale_fill_manual(labels=sample_lables)
+ggsave(filename = "Fig3.1.png", 
+       path = here("characterization/figures"),
+       width = 4, height = 3, units = "in" )
+
 #Chromosome 2
 cn_gtypes_long_chr2_fil <- filter(cn_gtypes_long, CHROM == "NC_035781.1") %>% select(POS, sample, cn) 
 cn_gtypes_long_chr2_fil$cn <- as.numeric(as.character(cn_gtypes_long_chr2_fil$cn))
