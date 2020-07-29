@@ -102,24 +102,24 @@ filter_dups <- rbind(common_filter_dups, repeat_filter_dups) %>% distinct()
 cvir_dup_bed <- oysterdup %>% select(CHROM,POS,end,ID)
 colnames(cvir_dup_bed) <- c("CHROM","start","stop","ID")
 # Number of duplications post filtration
-anti_join(cvir_dup_bed,filter_dups) %>% group_by(ID) %>% summarize(count=n()) %>% nrow() #11486 
+anti_join(cvir_dup_bed,filter_dups) %>% group_by(ID) %>% summarize(count=n()) %>% nrow() #10599 
 cvir_dups_fil_bed <- anti_join(cvir_dup_bed,filter_dups)
 
 # Output files:
 # These files are read in for further characterization of duplications
 #Write the files if needed. Files already available in the dir for use.
 # FILE 1: BEDFILE of filtered duplications
-# cvir_dups_fil_bed %>%
-#  write.table(here("filtration/cvir_filtered_dups.bed"), append = FALSE, sep = "\t",quote = FALSE,
-#              row.names = F, col.names = FALSE)
+cvir_dups_fil_bed %>%
+ write.table(here("filtration/cvir_filtered_dups.bed"), append = FALSE, sep = "\t",quote = FALSE,
+             row.names = F, col.names = FALSE)
 # FILE 2: VCF of filtered duplications
 oysterdup_fil <- anti_join(oysterdup, filter_dups)
-# oysterdup_fil %>%
-#  write.table(here("filtration/oysterdup_fil"), append = FALSE, sep = "\t",quote = TRUE,
-#                                             row.names = F, col.names = TRUE)
+oysterdup_fil %>%
+ write.table(here("filtration/oysterdup_fil"), append = FALSE, sep = "\t",quote = TRUE,
+                                            row.names = F, col.names = TRUE)
 
 # FILE 3: population counts of filtered duplications
 pop_num_alts_present_fil <- anti_join(pop_num_alts_present,filter_dups)
-# pop_num_alts_present_fil %>%
-#   write.table(here("filtration/pop_num_alts_present_fil"), append = FALSE, sep = "\t",quote = FALSE,
-#                                          row.names = F, col.names = TRUE)
+pop_num_alts_present_fil %>%
+  write.table(here("filtration/pop_num_alts_present_fil"), append = FALSE, sep = "\t",quote = FALSE,
+                                         row.names = F, col.names = TRUE)
