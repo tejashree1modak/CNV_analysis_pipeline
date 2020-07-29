@@ -19,15 +19,18 @@ colnames(dups_fil_merged) <- c("CHROM", "POS","end","count","POS_collapse","end_
 # Length of merged dups
 dups_fil_merged$len <- (dups_fil_merged$end - dups_fil_merged$POS) + 1
 #Total number of bases of all duplications
-sum(dups_fil_merged$len) #118781869
+sum(dups_fil_merged$len) #112809562
 # % of genome covered by duplications
 # Genome size of C.virginica genome can be found at https://www.ncbi.nlm.nih.gov/genome/398
-(sum(dups_fil_merged$len)/684000000)*100 #17% 
+(sum(dups_fil_merged$len)/684000000)*100 #16.5% 
 # basic stats
-median(dups_fil_merged$len) #893
-mean(dups_fil_merged$len) #15928.91
+median(dups_fil_merged$len) #863
+mean(dups_fil_merged$len) #16205.94
 summary(dups_fil_merged$len)
+# % below 1000bp
+dups_fil_merged %>% filter(len < 1000) %>% nrow() #3715 ie 3715/10599 = 35% below 1000bp
 #basic stats for LSDs (dups>1kb)
+dups_fil_merged %>% filter(len > 1000) %>% nrow()
 dups_fil_merged %>% filter(len > 1000) %>% select(len) %>% summary()
 
 
@@ -64,14 +67,18 @@ ggplot(gtypesp2,aes(genotype,number,color=pop))+geom_boxplot() + labs(x="Genotyp
 
 
 #### Duplication lengths ####
-oysterdup_fil <- read.table(here("characterization/oysterdup_fil"), 
+oysterdup_fil <- read.table(here("filtration/oysterdup_fil"), 
               sep="\t" , stringsAsFactors = FALSE, header = TRUE)
 # Fig S1 from paper: Frequency distribution of duplication lengths
-ggplot(oysterdup_fil, aes(length))+geom_histogram(binwidth = 60,fill="steelblue")+ylim(c(0,100))+
-  xlim(c(0,10000)) + labs(x="Length of duplications", y="Frequency") + theme_classic() +
+ggplot(oysterdup_fil, aes(length))+geom_histogram(binwidth = 60,fill="steelblue")+ylim(c(0,1000))+
+  xlim(c(0,5000)) + 
+  labs(x="Length of duplications", y="Frequency") + theme_classic() +
   theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=12), axis.title.x  = element_text(face = "bold", size=12), axis.title.y  = element_text(face = "bold", size=12)) 
+ggsave(filename = "FigS1.png", 
+       path = here("characterization/figures"),
+       width = 4, height = 3, units = "in" )
 # Distribution of duplication lengths per population
-pop_num_alts_present_fil <- read.table(here("characterization/pop_num_alts_present_fil"), 
+pop_num_alts_present_fil <- read.table(here("filtration/pop_num_alts_present_fil"), 
               sep="\t" , stringsAsFactors = FALSE, header = TRUE)
 ggplot(pop_num_alts_present_fil, aes(pop,length)) +geom_violin() + ylim(c(0,2500))
 # Mean lengths of duplications compared across populations
@@ -94,7 +101,7 @@ names(binaries) <- pops
 # have a look at the data
 head(binaries)  
 # how many duplications are present in more than 3 locations
-filter(binaries,rowSums(binaries)>3) %>% nrow() #5954 ie 52%
+filter(binaries,rowSums(binaries)>3) %>% nrow() #5954 ie 56%
 # Fig 2b from paper: UpSet plot of the intersected duplications across locations
 upset(binaries, nsets = length(pops), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
       sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 2), order.by = "freq")
@@ -213,3 +220,6 @@ ggplot(freq_cnv3, aes(x=CHROM,y=cnv_freq_norm)) +
   scale_x_discrete(labels=c("NC_035780.1"= "1","NC_035781.1"="2","NC_035782.1"="3","NC_035783.1"="4",
                             "NC_035784.1"="5","NC_035785.1"="6", "NC_035786.1"="7", "NC_035787.1"="8",
                             "NC_035788.1"="9","NC_035789.1"="10"))
+ggsave(filename = "Fig2.png", 
+       path = here("characterization/figures"),
+       width = 4, height = 3, units = "in" )
