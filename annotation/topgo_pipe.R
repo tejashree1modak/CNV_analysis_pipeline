@@ -53,10 +53,10 @@ resultFisherCC
 #The GenTable function returns a data frame containing the top topNodes GO terms identified by the classic algorithm,
 #BP
 FisherResBP <- GenTable(myBPGOdata, classicFisher = resultFisherBP, orderBy = "classicFisher", ranksOf = "classicFisher", topNodes = 22)
-write.csv(FisherResBP, file = "FisherResBP.csv")
+write.csv(FisherResBP, file = here("annotation/FisherResBP.csv"))
 #MF
 FisherResMF <- GenTable(myMFGOdata, classicFisher = resultFisherMF, orderBy = "classicFisher", ranksOf = "classicFisher", topNodes = 22)
-write.csv(FisherResMF, file = "FisherResMF.csv")
+write.csv(FisherResMF, file = here("annotation/FisherResMF.csv"))
 #CC
 FisherResCC <- GenTable(myCCGOdata, classicFisher = resultFisherCC, orderBy = "classicFisher", ranksOf = "classicFisher", topNodes = 22)
-write.csv(FisherResCC, file = "FisherResCC.csv")
+write.csv(FisherResCC, file = here("annotation/FisherResCC.csv"))
