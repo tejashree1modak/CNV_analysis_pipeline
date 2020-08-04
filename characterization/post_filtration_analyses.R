@@ -111,8 +111,8 @@ pop_sum_fil <- as.data.frame(colSums(binaries))
 pop_sum_fil <- data.frame(pop = names(binaries),total_dups=colSums(binaries))
 #get proportion of duplications by:
 # dividing total duplications per location by total number of duplications across locations
-pop_sum_fil$prop <- pop_sum_fil$total_dups/length(oysterdup_fil$ID)  #number of filtered dups are 11349 
-# Fig 1a from paper: Proportion of duplications per location
+pop_sum_fil$prop <- pop_sum_fil$total_dups/length(oysterdup_fil$ID)  #number of filtered dups are 10599 
+# Fig: Proportion of duplications per location
 ggplot(pop_sum_fil, aes(x=pop,y=prop, color=pop)) + geom_bar(stat = "identity", fill="white") + 
   labs(x="Populations", y="Proportion of total duplications per population", title ="Post filteration") 
 #+ scale_color_manual(values=values,labels=labels)
@@ -191,7 +191,7 @@ res_tuk <- TukeyHSD(res_aov)
 #shows chr5 has significantly higher freq of cnv than any other chr
 res_tuk_df <- as.data.frame(res_tuk$CHROM) 
 
-# Fig 2 from paper: Frequency of duplications per chromosome across locations normalized by chromosome length
+# Fig: Frequency of duplications per chromosome across locations normalized by chromosome length
 freq_cnv <- pop_alts_per_chrom_len_fil %>% mutate(cnv_freq_norm = (num_alts/len)) %>% select(pop, CHROM, cnv_freq_norm)
 is_outlier <- function(x) {
   return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
@@ -215,11 +215,11 @@ ggplot(freq_cnv3, aes(x=CHROM,y=cnv_freq_norm)) +
   geom_jitter(aes(x=CHROM,y=outlier_nt_inbred), shape=15, size=2)+
   labs(x="Chromosome Number", y="Frequency of CNVs") + theme_classic() +
   theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=12), 
-        axis.title.x  = element_text(face = "bold", size=16), 
-        axis.title.y  = element_text(face = "bold", size=16)) + 
+        axis.title.x  = element_text(face = "bold", size=12), 
+        axis.title.y  = element_text(face = "bold", size=12)) + 
   scale_x_discrete(labels=c("NC_035780.1"= "1","NC_035781.1"="2","NC_035782.1"="3","NC_035783.1"="4",
                             "NC_035784.1"="5","NC_035785.1"="6", "NC_035786.1"="7", "NC_035787.1"="8",
                             "NC_035788.1"="9","NC_035789.1"="10"))
 ggsave(filename = "Fig2.png", 
        path = here("characterization/figures"),
-       width = 4, height = 3, units = "in" )
+       width = 4, height = 4, units = "in" )
