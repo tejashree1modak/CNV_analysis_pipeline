@@ -1,5 +1,5 @@
-## Exceptional copy number variation within and among populations of the eastern oyster (*Crassostrea virginica*) 
-### Tejashree H. Modak, Rachel S. Schwartz
+## Exceptional genome wide copy number variation in the eastern oyster (*C. virginica*). 
+### Tejashree H. Modak, Robert Literman, Rachel S. Schwartz
 
 #### Duplication filtration:
 #### Filter 1: Duplications overlapping with repeat regions identified in the reference genome
