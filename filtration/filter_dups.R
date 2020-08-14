@@ -1,6 +1,7 @@
 #This script filters duplicatons identified by delly using the following criteria:
-  # Duplications that are likely fixed in the population.   
-  # Duplications that overlap >10% with a repeat region. 
+  # Duplications that pass quality filter as applied in DELLY.
+  # Duplications that are likely fixed in the population are filtered out.   
+  # Duplications that overlap >10% with a repeat region are filtered out. 
 
 # Dependencies installation and loading
 for (i in c("tidyverse" , "here")) {
@@ -20,9 +21,10 @@ for (i in c("tidyverse" , "here")) {
 #Use bedtools merge to merge repeats as mentioned in README.md
 ##################################################################################################
 
-#### Read in vcf file from delly ####
+#### Read in merged vcf output file from delly ####
 #all vcf data for each individual for each duplication obtained from DELLY in a vcf format
 oysterdup <- read.table(here("filtration/germline_nohead_dup.vcf"),stringsAsFactors = FALSE)
+#Add header with samples names
 header <- strsplit("CHROM POS ID      REF     ALT     QUAL    FILTER  
                    INFO    FORMAT  CL_1    CL_2    CL_3    CL_4    CL_5    CL_6    CLP_1   CLP_2   
                    CLP_3   CLP_4   CLP_5   CLP_6   CS_1    CS_2    CS_3    CS_5    CS_6    CS_7    
@@ -33,15 +35,16 @@ header <- strsplit("CHROM POS ID      REF     ALT     QUAL    FILTER
                    NG_NH2M1        SL_1    SL_2    SL_3    SL_4    SL_5    SL_6
                    SM_10   SM_11   SM_12   SM_7    SM_8    SM_9", "\\s+")[[1]]
 colnames(oysterdup)<-header
+
+#### Filter 1: Keep duplications that pass quality criteria in DELLY ####
 oysterdup <-dplyr::filter(oysterdup,FILTER=="PASS")
+#Get length of each duplication
 oysterdup$end <- str_split(oysterdup$INFO, ';') %>%
   map_chr(5) %>% str_split('=') %>% map_chr(2) %>% as.integer()
-#Get length of each duplication
 oysterdup$length <- oysterdup$end - oysterdup$POS
 
-#### Presence/Absence of duplications by sample ####
-#Extracting genotype will inform us of presence/absence of a duplication per sample
-# Genotype 0/0 = homozygous for absence of duplication, genotype 0/1 or 1/0 = heterozygouse for presence of duplication
+#### Extracting genotypes for duplications per sample ####
+# Genotype 0/0 = homozygous for absence of duplication, genotype 0/1 or 1/0 = heterozygous for presence of duplication
 # genotype 1/1 = homozygous for presence of duplication
 
 #Function to pull out genotype from a col in the vcf for a sample
@@ -68,7 +71,7 @@ pop_num_alts <- left_join(pop_num_alts,select(oysterdup,ID,length) )
 #when num_alts > 0 genptype 0/1 or 1/0 or 1/1 meaning duplication is present in the sample at that location
 pop_num_alts_present <- filter(pop_num_alts,num_alts >0)
 
-#### Filter 1: Fixed duplications ####
+#### Filter 2: Fixed duplications ####
 #Get dups common to all populations since they are likely artifacts 
 common_dups <- pop_num_alts_present %>% group_by(ID) %>% tally(sort = TRUE) %>% head(1046) %>% select(ID)
 #Get dups common to all populations but present in all samples of each population
@@ -78,7 +81,7 @@ sample_num_alts <- gtypes_long %>% filter(!is.na(num_alts)) %>% filter(num_alts 
 common_filter_dups <- 
   semi_join(sample_num_alts,common_dups, by="ID") %>% group_by(ID) %>% summarize(count=n()) %>% filter(count > 54) %>% select("ID")
 
-#### Filter 2: Duplications in repeat regions ####
+#### Filter 3: Duplications in repeat regions ####
 # Read in bedtools Ouput of intersect between repeat regions in reference genome and duplications  
 dup_repeat_overlap <- read.table(here("filtration/dup_repeat_merged_overlap_mod.bed"), 
                                  sep="\t" , stringsAsFactors = FALSE)
@@ -106,7 +109,8 @@ anti_join(cvir_dup_bed,filter_dups) %>% group_by(ID) %>% summarize(count=n()) %>
 cvir_dups_fil_bed <- anti_join(cvir_dup_bed,filter_dups)
 
 # Output files:
-# These files are read in for further characterization of duplications
+# These files are input for further characterization of duplications
+# by scripts in characterization dir. 
 #Write the files if needed. Files already available in the dir for use.
 # FILE 1: BEDFILE of filtered duplications
 cvir_dups_fil_bed %>%
