@@ -1,13 +1,13 @@
-## Exceptional copy number variation within and among populations of the eastern oyster (*Crassostrea virginica*) 
-### Tejashree H. Modak, Rachel S. Schwartz
+## Exceptional genome wide copy number variation in the eastern oyster (*C. virgiinica*). 
+### Tejashree H. Modak, Robert Literman, Rachel S. Schwartz
 
 #### Reference genome and resequencing data:
 - [Reference genome](https://www.ncbi.nlm.nih.gov/genome/398)
-- Resequence data: 91 individuals of *C.virginica* across 16 locations along the eastern coast of the United States were sampled (details in the upcoming Genome paper).
+- Resequence data: 91 individuals of *C.virginica* across 16 locations along the eastern coast of the United States were sampled (details in the upcoming Genome paper in Puritz et al., in prep).
 #### CNV discovery
-- **Software:** CNVs were called using 'germline SV calling' with default parameters in [DELLY2](https://github.com/dellytools/delly).
+- **Software:** CNVs were called using 'germline SV calling' with default parameters in [DELLY2](https://github.com/dellytools/delly)i (v0.7.8).
 - **Requirements:** BAM files per sample and reference genome fasta. 
-- All steps performed as described in the Germline SV calling section.
+- All steps performed as described in the [Germline SV calling section](https://github.com/dellytools/delly#germline-sv-calling).
 - Convert output file format from .bcf to .vcf using [bcftools](http://samtools.github.io/bcftools/bcftools.html#view). 
 
 #### R scripts for data processing and analysis 
@@ -17,8 +17,9 @@
 
 This step filters duplications identified by delly using the following criteria:
 
-1. Duplications that are present in >90% of samples hence likely fixed in the population.   
-2. Duplications that overlap >10% with a repeat region identified in the reference genome. 
+1. Duplications that pass the quality filter as applied in DELLY are kept.
+2. Duplications that are present in >90% of samples hence likely fixed in the population are filtered out.   
+3. Duplications that overlap >10% with a repeat region identified in the reference genome are filtered out. 
 
 Script: filter_dups.R
 
@@ -40,4 +41,6 @@ This step annotates duplications using the reference genome annotation.
 1. GO and KEGG annotation
 2. Mapping duplications to different features in the genome
 
-Script: annotation_dups.R
+Script 1: annotation_dups.R
+
+Script 2: Oyster_Annotation_Processing.R
