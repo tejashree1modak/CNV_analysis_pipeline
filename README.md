@@ -1,11 +1,11 @@
-## Exceptional genome wide copy number variation in the eastern oyster (*C. virgiinica*). 
+## Exceptional genome wide copy number variation in the eastern oyster (*C. virginica*). 
 ### Tejashree H. Modak, Robert Literman, Rachel S. Schwartz
 
 #### Reference genome and resequencing data:
 - [Reference genome](https://www.ncbi.nlm.nih.gov/genome/398)
-- Resequence data: 91 individuals of *C.virginica* across 16 locations along the eastern coast of the United States were sampled (details in the upcoming Genome paper in Puritz et al., in prep).
+- Resequence data: 60 individuals of *C.virginica* across 9 locations along the eastern coast of the United States were sampled (details in the upcoming Genome paper in Puritz et al., in prep).
 #### CNV discovery
-- **Software:** CNVs were called using 'germline SV calling' with default parameters in [DELLY2](https://github.com/dellytools/delly)i (v0.7.8).
+- **Software:** CNVs were called using 'germline SV calling' with default parameters in [DELLY2](https://github.com/dellytools/delly) (v0.7.8).
 - **Requirements:** BAM files per sample and reference genome fasta. 
 - All steps performed as described in the [Germline SV calling section](https://github.com/dellytools/delly#germline-sv-calling).
 - Convert output file format from .bcf to .vcf using [bcftools](http://samtools.github.io/bcftools/bcftools.html#view). 
