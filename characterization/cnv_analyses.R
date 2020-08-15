@@ -52,8 +52,7 @@ cn_chr1_hmap_fil <- ggplot(data = cn_gtypes_long_chr1_fil, mapping = aes(x = POS
   theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=11), 
         axis.title.x  = element_text(face = "bold", size=16), 
         axis.title.y  = element_text(face = "bold", size=16))
-#+ scale_fill_manual(labels=sample_lables)
-cn_chr1_hmap_fil + geom_vline(xintercept = (65668439/2), color = "red", size=0.3) #+ scale_fill_manual(labels=sample_lables)
+cn_chr1_hmap_fil + geom_vline(xintercept = (65668439/2), color = "red", size=0.3) 
 ggsave(filename = "Fig3.1.png", 
        path = here("characterization/figures"),
        width = 9, height = 8, units = "in" )
