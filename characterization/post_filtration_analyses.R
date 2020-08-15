@@ -45,7 +45,14 @@ gett <- function(bedout_col){
   table(g2)
 }
 #run above function on all samples (columns)
-gtypes <- select(oysterdup_fil,CL_1:SM_9) %>% map_dfr(gett)
+gtypesa <- select(oysterdup_fil,CL_1:HCVA_6) %>% map_dfr(gett)
+gtypesb <- select(oysterdup_fil,HG_HG2F1:SM_9) %>% map_dfr(gett)
+gtypesc <- gett(oysterdup_fil$HG_HG0F2)
+gtypesc <- as.data.frame(gtypesc)
+gtypesc <- as.data.frame(gtypesc$Freq)
+absent_count <- c(as.integer(0)) # freq of genptype "./." for HG_HG0F2 is 0
+gtypesc <- rbind(absent_count,gtypesc)
+gtypes <- cbind(gtypesa, HG_HG0F2=gtypesc$`gtypesc$Freq` ,gtypesb)
 gtypes2 <-as.data.frame(t(gtypes))
 colnames(gtypes2) <- c("./.", "0/0",  "0/1",  "1/1")
 gtypes2$pop <- map_chr(str_split(rownames(gtypes2),"_"),1) #add pop info (no sample num)
@@ -60,6 +67,7 @@ levels(gtypesp2$pop) <- c("HI","SM","HC","HCVA",  "CS", "CLP",
                           "SL","CL","LM",
                           "HG","NG")  #reorder pops
 # Proportion of genotypes for duplications per population
+#Plot shows heterozygous genotype (p01) for presence of duplications is more in proportion than homogzygous (p1) 
 ggplot(gtypesp2,aes(genotype,number,color=pop))+geom_boxplot() + labs(x="Genotype", y="Proportion") + theme_classic() +
   theme(axis.text.x  = element_text(size=14), axis.text.y  = element_text(size=14), 
         axis.title.x  = element_text(face = "bold", size=16), axis.title.y  = element_text(face = "bold", size=16),
@@ -70,6 +78,7 @@ ggplot(gtypesp2,aes(genotype,number,color=pop))+geom_boxplot() + labs(x="Genotyp
 oysterdup_fil <- read.table(here("filtration/oysterdup_fil"), 
               sep="\t" , stringsAsFactors = FALSE, header = TRUE)
 # Fig S1 from paper: Frequency distribution of duplication lengths
+# Figure shows shorter duplications more common than longer ones
 ggplot(oysterdup_fil, aes(length))+geom_histogram(binwidth = 60,fill="steelblue")+ylim(c(0,1000))+
   xlim(c(0,5000)) + 
   labs(x="Length of duplications", y="Frequency") + theme_classic() +
@@ -80,6 +89,7 @@ ggsave(filename = "FigS1.png",
 # Distribution of duplication lengths per population
 pop_num_alts_present_fil <- read.table(here("filtration/pop_num_alts_present_fil"), 
               sep="\t" , stringsAsFactors = FALSE, header = TRUE)
+#plot shows distribution of lengths is similar in all sampling locations
 ggplot(pop_num_alts_present_fil, aes(pop,length)) +geom_violin() + ylim(c(0,2500))
 # Mean lengths of duplications compared across populations
 meanl <- group_by(pop_num_alts_present_fil,pop) %>% summarize(mean_len = mean(length),sd = sd(length))
@@ -114,8 +124,8 @@ pop_sum_fil <- data.frame(pop = names(binaries),total_dups=colSums(binaries))
 pop_sum_fil$prop <- pop_sum_fil$total_dups/length(oysterdup_fil$ID)  #number of filtered dups are 10599 
 # Fig: Proportion of duplications per location
 ggplot(pop_sum_fil, aes(x=pop,y=prop, color=pop)) + geom_bar(stat = "identity", fill="white") + 
-  labs(x="Populations", y="Proportion of total duplications per population", title ="Post filteration") 
-#+ scale_color_manual(values=values,labels=labels)
+  labs(x="Populations", y="Proportion of total duplications per location") 
+
 
 ##Comparison of dups within samples for inbred pop ##
 getg <- function(bedout_col){
@@ -191,7 +201,7 @@ res_tuk <- TukeyHSD(res_aov)
 #shows chr5 has significantly higher freq of cnv than any other chr
 res_tuk_df <- as.data.frame(res_tuk$CHROM) 
 
-# Fig: Frequency of duplications per chromosome across locations normalized by chromosome length
+# Fig2 in manuscript: Frequency of duplications per chromosome across locations normalized by chromosome length
 freq_cnv <- pop_alts_per_chrom_len_fil %>% mutate(cnv_freq_norm = (num_alts/len)) %>% select(pop, CHROM, cnv_freq_norm)
 is_outlier <- function(x) {
   return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
