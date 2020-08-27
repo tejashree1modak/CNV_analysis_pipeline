@@ -5,6 +5,13 @@ library(testit)
 library(reticulate)
 library(tidyverse)
 
+for (i in c("here")) {
+  if(!require(i, character.only=TRUE)) {
+    install.packages(i, dependencies=TRUE)
+    require(i, character.only=TRUE)
+  }
+}
+
 # Get introns based on merged CDS
 cdsIntron <- function(gene_id){
   library(tidyverse)
@@ -116,9 +123,9 @@ if(cores == 1){
   cores <- cores-1
 }
 
-# Raw data files hosted at: <Zenodo>
-fasta <- 'data/ref_C_virginica-3.0_top_level.fa'
-gff3 <- 'data/ref_C_virginica-3.0_top_level.gff3'
+# Raw data files hosted in annotation/genome_files/
+fasta <- here("filtration/genome_files/ref_C_virginica-3.0_top_level.fa")
+gff3 <- here("filtration/genome_files/ref_C_virginica-3.0_top_level.gff3")
 
 # Remove header rows and read in GFF3
 raw_gff3 <- read_tsv(system(paste("grep -E -v '##|#!'",gff3,sep = " "),intern = TRUE),col_types = 'ccciicccc',col_names = c('Chr','Build','Annotation','Start','End','Dot1','Strand','Dot3','Description'))
