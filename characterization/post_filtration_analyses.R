@@ -68,10 +68,13 @@ levels(gtypesp2$pop) <- c("HI","SM","HC","HCVA",  "CS", "CLP",
                           "HG","NG")  #reorder pops
 # Proportion of genotypes for duplications per population
 #Plot shows heterozygous genotype (p01) for presence of duplications is more in proportion than homogzygous (p1) 
-ggplot(gtypesp2,aes(genotype,number,color=pop))+geom_boxplot() + labs(x="Genotype", y="Proportion") + theme_classic() +
-  theme(axis.text.x  = element_text(size=14), axis.text.y  = element_text(size=14), 
-        axis.title.x  = element_text(face = "bold", size=16), axis.title.y  = element_text(face = "bold", size=16),
+ggplot(gtypesp2,aes(genotype,number,color=pop))+geom_boxplot(outlier.size = 0.5) + labs(x="Genotype", y="Proportion") + theme_classic() +
+  theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=12), 
+        axis.title.x  = element_text(face = "bold", size=12), axis.title.y  = element_text(face = "bold", size=12),
         legend.title = element_blank())
+ggsave(filename = "FigS2.png", 
+       path = here("characterization/figures"),
+       width = 6, height = 5, units = "in" )
 
 
 #### Duplication lengths ####
