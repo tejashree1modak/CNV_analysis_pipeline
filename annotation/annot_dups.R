@@ -53,13 +53,17 @@ dup_loc_xp <- left_join(map_dup_fil, ref_annot_prot, by="LOC")
 ref_annot_go_kegg <- read.table(here("annotation/XP_sequences_Cvirginica_GCF_002022765.2_GO.tab"), 
                                 sep="\t" , quote="", fill=FALSE, stringsAsFactors = FALSE, header = TRUE)
 colnames(ref_annot_go_kegg) <- c("Sequence_name","Sequence_length","Sequence_description","GO_ID","Enzyme_code","Enzyme_name")
+#What % genes (LOCs) are mapped to kegg or GO ID.
+ref_annot_go_kegg %>% filter(!is.na(Enzyme_name)) %>% filter(Enzyme_name != "") %>% nrow() #10.4 % (100*6273)/60213
+ref_annot_go_kegg %>% filter(!is.na(GO_ID)) %>% filter(GO_ID != "") %>% nrow() #58.2% (100*35081)/30213
+
 dup_kegg <- left_join(dup_loc_xp, ref_annot_go_kegg, by="Sequence_name") %>% select(ID, Enzyme_code, Enzyme_name) %>% unique() 
 # write KEGG annotation file
 dup_kegg %>%  
   write.table(here("annotation/dup_kegg"), append = FALSE, sep = "\t",quote = TRUE,
               row.names = F, col.names = TRUE)
 #What % dups mapped to an EC number via kegg
-dup_kegg %>% filter(!is.na(Enzyme_name)) %>% filter(Enzyme_name != "") %>% nrow() # 10.08% (1144*100)/11339
+dup_kegg %>% filter(!is.na(Enzyme_name)) %>% filter(Enzyme_name != "") %>% nrow() # 10.8% (1144*100)/10599
 #separate the enzyme names and get count for each
 kegg_vector <- as.data.frame(table(unlist(strsplit(as.character(dup_kegg$Enzyme_name), ";"))))
 colnames(kegg_vector) <- c("Enzyme Name", "Number of genes mapped")
@@ -78,6 +82,8 @@ write.table(kegg_vector_sorted, here("annotation/dup_kegg_freq"), append = FALSE
 #### GO annotation for duplications ####
 #Extract DUP_IDs, GO_IDs
 dup_go <- left_join(dup_loc_xp, ref_annot_go_kegg, by="Sequence_name") %>% select(ID, GO_ID) %>% unique() 
+#What % dups mapped to GO terms
+dup_go %>% filter(!is.na(GO_ID)) %>% filter(GO_ID != "") %>% nrow() # 63.45% (6726*100)/10599
 # write GO annotation file
 dup_go %>%  
   write.table(here("annotation/dup_go"), append = FALSE, sep = "\t",quote = TRUE,
