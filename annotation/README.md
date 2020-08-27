@@ -1,5 +1,5 @@
-## Exceptional copy number variation within and among populations of the eastern oyster (*Crassostrea virginica*) 
-### Tejashree H. Modak, Rachel S. Schwartz
+## Exceptional genome wide copy number variation in the eastern oyster (*C. virginica*). 
+### Modak et al.2020
 
 ### Duplication annotation:
 #### Annotation files for the reference genome can be found here:
@@ -43,7 +43,7 @@ Genes were pulled out from the reference.gff3 file:
 
 `awk -F'\t' -v OFS='\t' '$3 == "gene" {print $1, $4, $5, $3, $9}' ref_C_virginica-3.0_top_level.gff3 | awk -F'\t' -v OFS='\t' '/gene=/ { split($NF, a, /;/); gene = ""; for (i in a)  { if (a[i] ~ /^gene=/) { gene = substr(a[i], 6) } }  print $1, $2, $3, $4, gene; next }  { print $1, $2, $3, $4, "NA" } ' > gene_annot.bed`
 
-Result: 4406 (38.8%) dups lie completely within genes
+Result: 4270 (40.3%) duplications lie completely within genes
 
 #### Overlap with exons
 
@@ -51,12 +51,14 @@ Exons were pulled out from the reference.gff3 file:
 
 `awk -F'\t' -v OFS='\t' '$3 == "exon" {print $1, $4, $5, $3, $9}' ref_C_virginica-3.0_top_level.gff3 | awk -F'\t' -v OFS='\t' '/gene=/ && /product=/ { split($NF, a, /;/); gene = product = ""; for (i in a)  { if (a[i] ~ /^gene=/) { gene = substr(a[i], 6) } else if (a[i] ~ /^product=/) { product = substr(a[i], 9); } } print $1, $2, $3, $4, gene, product; next }  { print $1, $2, $3, $4, "NA", "NA" } '  > exon_annot.bed`
 
-Result: 316 (2.7%) dups lie completely within exons
+Result: 535 (5.05%) duplications lie completely within exons
 
 #### Overlap with introns and intergenic regions separately
 
-Introns and intergenic regions were pulled out separately for C.virginica reference genome.
+Introns and intergenic regions were pulled out separately for C.virginica reference genome. This was done using the script Oyster_Annotation_Processing.R present in this directory.
 Bedtools intersect with -f1 flag was used to get duplications completely within introns or intergenic region.
-Result: 2426 (21.4 %) dups overlap introns completely and 3336 (29.4%) overlap intergenic regions completely.
+Result: 2306 (21.8%) duplications overlap introns completely and 3105 (29.3%) overlap intergenic regions completely.
 
-These results are shown in Fig 4 in the paper: Percent duplications overlapping completely with different genomic features. 
+### GO enrichment 
+GO enrichment was performed using topGO using script topGO.R present in this dir. This script performs enrichment using GO terms mapped to duplications as compared to GO mapping of the reference genome.  
+
