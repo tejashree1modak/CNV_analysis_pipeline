@@ -1,5 +1,5 @@
 ## Exceptional genome wide copy number variation in the eastern oyster (*C. virginica*). 
-### Tejashree H. Modak, Robert Literman, Rachel S. Schwartz
+### Modak et al., 2020
 
 #### Duplication filtration:
 #### Filter 1: Duplications overlapping with repeat regions identified in the reference genome

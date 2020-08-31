@@ -1,5 +1,5 @@
 ## Exceptional genome wide copy number variation in the eastern oyster (*C. virginica*). 
-### Tejashree H. Modak, Robert Literman, Rachel S. Schwartz
+### Modak et al., 2020
 
 #### Reference genome and resequencing data:
 - [Reference genome](https://www.ncbi.nlm.nih.gov/genome/398)
