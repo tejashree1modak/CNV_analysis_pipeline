@@ -130,43 +130,6 @@ ggplot(pop_sum_fil, aes(x=pop,y=prop, color=pop)) + geom_bar(stat = "identity", 
   labs(x="Populations", y="Proportion of total duplications per location") 
 
 
-##Comparison of dups within samples for inbred pop ##
-getg <- function(bedout_col){
-  str_split( bedout_col, ':') %>% map_chr(1)
-}
-
-gtypes_only_fil <- map_dfr(select(oysterdup_fil,CL_1:SM_9),getg)
-gtypes_only_fil$ID <- oysterdup_fil$ID
-gtypes_long_fil <- gather(gtypes_only_fil,key=sample,value=gtype,-ID)
-gtypes_long_fil$pop <- str_split(gtypes_long_fil$sample,'_') %>% map(1) %>% as.character()
-gtypes_long_fil$pop <- as.vector(gtypes_long_fil$pop)
-gtypes_long_fil$num_alts <- str_split(gtypes_long_fil$gtype,'/') %>% 
-  map(as.integer) %>% 
-  map_int(sum)
-# For HG
-gtypes_long_HG <- gtypes_long_fil %>% filter(num_alts > 0) %>% 
-  filter(pop == 'HG')
-ids_HG <- unique(gtypes_long_HG$ID)
-samples <- unique(gtypes_long_HG$sample)
-binaries_HG <- samples %>% 
-  map_dfc(~ ifelse(ids_HG %in% filter(gtypes_long_HG, sample == .x)$ID, 1, 0) %>% 
-            as.data.frame)
-names(binaries_HG) <- samples
-# For NG
-gtypes_long_NG <- gtypes_long_fil %>% filter(num_alts > 0) %>% 
-  filter(pop == 'NG')
-ids_NG <- unique(gtypes_long_NG$ID)
-samples_NG <- unique(gtypes_long_NG$sample)
-binaries_NG <- samples_NG %>% 
-  map_dfc(~ ifelse(ids_NG %in% filter(gtypes_long_NG, sample == .x)$ID, 1, 0) %>% 
-            as.data.frame)
-names(binaries_NG) <- samples_NG
-# UpSet plot of the intersected duplications among inbred populations
-upset(binaries_HG, nsets = length(samples), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
-      sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 2), order.by = "freq")
-upset(binaries_NG, nsets = length(samples_NG), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
-      sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 2), order.by = "freq")
-
 #### Frequency of Duplications per chromosome comparison across locations ####
 # get chromosome locations
 chrom_pos <- oysterdup_fil %>% select(CHROM, POS)
