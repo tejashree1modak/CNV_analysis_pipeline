@@ -8,8 +8,9 @@ for (i in c("tidyverse","here")) {
   }
 }
 
-# Read in file with filtered duplications. 
-oysterdup_fil <- read.table(here("filtration/oysterdup_fil"), 
+# Read in file with filtered duplications.
+#Read in masked oysterdup_fil
+oysterdup_fil <- read.table(here("filtration/masked_oysterdup_fil"), 
                             sep="\t" , stringsAsFactors = FALSE, header = TRUE)
 
 
@@ -28,16 +29,16 @@ oysterdup_fil <- read.table(here("filtration/oysterdup_fil"),
 ref_annot <- read.table("annotation/ref_annot", 
                         sep="\t" , quote="", fill=FALSE, stringsAsFactors = FALSE)
 colnames(ref_annot) <- c("LOC", "annot")
-# Read in bed file of dups mapped to LOCs from ref genome
-map_dup <- read.table("annotation/Oyster_Dup_gene", sep="\t" , stringsAsFactors = FALSE)
+# Read in bed file of MASKED dups mapped to LOCs from ref genome
+map_dup <- read.table("annotation/masked_Oyster_Dup_gene", sep="\t" , stringsAsFactors = FALSE)
 colnames(map_dup) <- c("ID", "LOC")
 # Keep those duplications that passed the filter
 map_dup_fil <- map_dup %>% filter(map_dup$ID %in% oysterdup_fil$ID)
 # Get annotation for filtered duplications
 dup_annot <- left_join(map_dup_fil, ref_annot, by = "LOC") 
-# write annotation file
+# write annotation file with the MASKED 
 dup_annot %>%  
-  write.table(here("annotation/dup_annot"), append = FALSE, sep = "\t",quote = TRUE,
+  write.table(here("annotation/masked_dup_annot"), append = FALSE, sep = "\t",quote = TRUE,
               row.names = F, col.names = TRUE)
 
 #### KEGG annotation for duplications ####
@@ -54,27 +55,27 @@ ref_annot_go_kegg <- read.table(here("annotation/XP_sequences_Cvirginica_GCF_002
                                 sep="\t" , quote="", fill=FALSE, stringsAsFactors = FALSE, header = TRUE)
 colnames(ref_annot_go_kegg) <- c("Sequence_name","Sequence_length","Sequence_description","GO_ID","Enzyme_code","Enzyme_name")
 dup_kegg <- left_join(dup_loc_xp, ref_annot_go_kegg, by="Sequence_name") %>% select(ID, Enzyme_code, Enzyme_name) %>% unique() 
-# write KEGG annotation file
+# write KEGG annotation file for MASKED data
 dup_kegg %>%  
-  write.table(here("annotation/dup_kegg"), append = FALSE, sep = "\t",quote = TRUE,
+  write.table(here("annotation/masked_dup_kegg"), append = FALSE, sep = "\t",quote = TRUE,
               row.names = F, col.names = TRUE)
 #What % dups mapped to an EC number via kegg
-dup_kegg %>% filter(!is.na(Enzyme_name)) %>% filter(Enzyme_name != "") %>% nrow() # 10.84% (1230*100)/11339
+dup_kegg %>% filter(!is.na(Enzyme_name)) %>% filter(Enzyme_name != "") %>% nrow() # 9.79% (1261*100)/12873
 #separate the enzyme names and get count for each
 kegg_vector <- as.data.frame(table(unlist(strsplit(as.character(dup_kegg$Enzyme_name), ";"))))
 colnames(kegg_vector) <- c("Enzyme Name", "Number of genes mapped")
 kegg_vector_sorted <-  kegg_vector[order(kegg_vector$Freq, decreasing=TRUE),] 
-#make a csv file for paper
-write.table(kegg_vector_sorted, here("annotation/dup_kegg_freq"), append = FALSE, sep = ",", quote = FALSE,
+#make a csv file for paper for MASKED data
+write.table(kegg_vector_sorted, here("annotation/masked_dup_kegg_freq"), append = FALSE, sep = ",", quote = FALSE,
             row.names = F, col.names = TRUE)
 
 
 #### GO annotation for duplications ####
 #Extract DUP_IDs, GO_IDs
 dup_go <- left_join(dup_loc_xp, ref_annot_go_kegg, by="Sequence_name") %>% select(ID, GO_ID) %>% unique() 
-# write GO annotation file
+# write GO annotation file for MASKED data
 dup_go %>%  
-  write.table(here("annotation/dup_go"), append = FALSE, sep = "\t",quote = TRUE,
+  write.table(here("annotation/masked_dup_go"), append = FALSE, sep = "\t",quote = TRUE,
               row.names = F, col.names = TRUE)
 #separate the GO_IDs and get count for each
 go_vector <- as.data.frame(table(unlist(strsplit(as.character(dup_go$GO_ID), ";"))))

@@ -22,7 +22,8 @@ for (i in c("tidyverse" , "here")) {
 
 #### Read in vcf file from delly ####
 #all vcf data for each individual for each duplication obtained from DELLY in a vcf format
-oysterdup <- read.table(here("filtration/germline_nohead_dup.vcf"),stringsAsFactors = FALSE)
+#File obtained from masked genome is called germline_nohead_dups.tsv
+oysterdup <- read.table(here("filtration/germline_nohead_dups.tsv"),stringsAsFactors = FALSE)
 header <- strsplit("CHROM POS ID      REF     ALT     QUAL    FILTER  
                    INFO    FORMAT  CL_1    CL_2    CL_3    CL_4    CL_5    CL_6    CLP_1   CLP_2   
                    CLP_3   CLP_4   CLP_5   CLP_6   CS_1    CS_2    CS_3    CS_5    CS_6    CS_7    
@@ -83,8 +84,9 @@ common_filter_dups <-
   semi_join(sample_num_alts,common_dups, by="ID") %>% group_by(ID) %>% summarize(count=n()) %>% filter(count > 81) %>% select("ID")
 
 #### Filter 2: Duplications in repeat regions ####
-# Read in bedtools Ouput of intersect between repeat regions in reference genome and duplications  
-dup_repeat_overlap <- read.table(here("filtration/dup_repeat_merged_overlap_mod.bed"), 
+# Read in bedtools Ouput of intersect between repeat regions in reference genome and duplications 
+#new file from the masked genome is called masked_dup_repeat_merged_overlap_mod.bed
+dup_repeat_overlap <- read.table(here("filtration/masked_dup_repeat_merged_overlap_mod.bed"), 
                                  sep="\t" , stringsAsFactors = FALSE)
 colnames(dup_repeat_overlap) <- c("CHROM", "POS","end","ID","R_POS","R_end","R_ID","l")
 #Number of repeats mapped to each duplicate
@@ -96,32 +98,33 @@ colnames(overlap_total_len) <- c("ID","total_len")
 percent_overlap <- oysterdup %>% select(ID,length) %>% left_join(overlap_total_len,by = 'ID') %>% na.omit() 
 percent_overlap$percent <- (percent_overlap$total_len/percent_overlap$length)*100
 #dups with >10% repeat coverage
-percent_overlap %>% filter(percent > 10) %>% nrow() #filter out 1778 dups
+percent_overlap %>% filter(percent > 10) %>% nrow() #filter out 1997 dups
 repeat_filter_dups <- percent_overlap %>% filter(percent > 10) %>% select("ID")
 
 #### Get final set of duplications post filtration ####
 #Combining list of dups to be filtered because they are shared among >90% samples or have >10% repeat coverage.
-filter_dups <- rbind(common_filter_dups, repeat_filter_dups) %>% distinct() 
+filter_dups <- rbind(common_filter_dups, repeat_filter_dups) %>% distinct() #2278
 # Make a bedfile for filtered duplications for further analysis
 cvir_dup_bed <- oysterdup %>% select(CHROM,POS,end,ID)
 colnames(cvir_dup_bed) <- c("CHROM","start","stop","ID")
 # Number of duplications post filtration
-cvir_dups_fil_bed <- anti_join(cvir_dup_bed,filter_dups) %>% group_by(ID) %>% summarize(count=n()) %>% nrow() #11339 
+anti_join(cvir_dup_bed,filter_dups) %>% group_by(ID) %>% summarize(count=n()) %>% nrow() #12873 
+cvir_dups_fil_bed <- anti_join(cvir_dup_bed,filter_dups) 
 
 # Output files:
 # These files are read in for further characterization of duplications
 #Write the files if needed. Files already available in the dir for use.
 # FILE 1: BEDFILE of filtered duplications
-#cvir_dups_fil_bed %>%
-#  write.table(here("filtration/cvir_filtered_dups.bed"), append = FALSE, sep = "\t",quote = FALSE,
+# cvir_dups_fil_bed %>%
+#  write.table(here("filtration/masked_cvir_filtered_dups.bed"), append = FALSE, sep = "\t",quote = FALSE,
 #              row.names = F, col.names = FALSE)
 # FILE 2: VCF of filtered duplications
 oysterdup_fil <- anti_join(oysterdup, filter_dups)
 oysterdup_fil %>%  
-  write.table(here("filtration/oysterdup_fil"), append = FALSE, sep = "\t",quote = TRUE,
+  write.table(here("filtration/masked_oysterdup_fil"), append = FALSE, sep = "\t",quote = TRUE,
                                              row.names = F, col.names = TRUE)
 # FILE 3: population counts of filtered duplications
 pop_num_alts_present_fil <- anti_join(pop_num_alts_present,filter_dups)
 pop_num_alts_present_fil %>% 
-  write.table(here("filtration/pop_num_alts_present_fil"), append = FALSE, sep = "\t",quote = FALSE,
+  write.table(here("filtration/masked_pop_num_alts_present_fil"), append = FALSE, sep = "\t",quote = FALSE,
                                          row.names = F, col.names = TRUE)

@@ -9,8 +9,8 @@ for (i in c("tidyverse","here")) {
 }
 
 #### Copy Number comparison of Duplications across locations ####
-# Read in file with filtered duplications. 
-oysterdup_fil <- read.table(here("filtration/oysterdup_fil"), 
+# Read in file with filtered duplications from masked genome. 
+oysterdup_fil <- read.table(here("filtration/masked_oysterdup_fil"), 
                             sep="\t" , stringsAsFactors = FALSE, header = TRUE)
 #Getting the genotype and copy number for all pop
 #function to pull out copy num from a col in the vcf for a sample
