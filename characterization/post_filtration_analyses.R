@@ -2,7 +2,7 @@
 
 
 # Dependencies installation and loading
-for (i in c("UpSetR","tidyverse","here")) {
+for (i in c("UpSetR","tidyverse","here", "VennDiagram")) {
   if(!require(i, character.only=TRUE)) {
     install.packages(i, dependencies=TRUE)
     require(i, character.only=TRUE)
@@ -86,6 +86,7 @@ ggplot(meanl,aes(pop,mean_len))+geom_point()+
 ## Upset plot of duplications across locations POST FILTERATION ##
 # get a de-duplicated list of locus id's
 ids <- unique(pop_num_alts_present_fil$ID)
+length(ids) #total number of dups in all locs
 # for each id, get a binary indicator of whether it is in a pop and bind to one dataframe
 pops <- unique(pop_num_alts_present_fil$pop)
 binaries <- pops %>% 
@@ -99,7 +100,62 @@ head(binaries)
 filter(binaries,rowSums(binaries)>3) %>% nrow() #masked:7572 ie 58.8 ~60%
 # Fig 2b from paper: UpSet plot of the intersected duplications across locations
 upset(binaries, nsets = length(pops), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
-      sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 2), order.by = "freq")
+      sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 1.4), order.by = "freq")
+
+## Upset plot of duplications to compare selected and wild among themselves POST FILTERATION ##
+# For wild samples
+wild <- pops[c(1:3,5:6,8:9,14:15)]
+pop_num_alts_present_fil_wild <- pop_num_alts_present_fil %>% 
+  filter(pop_num_alts_present_fil$pop %in% wild)
+ids_wild <- unique(pop_num_alts_present_fil_wild$ID)
+#Count number of duplications present in wild samples
+length(ids_wild)#11944
+binaries_wild <- wild %>% 
+  map_dfc(~ ifelse(ids_wild %in% filter(pop_num_alts_present_fil_wild, pop == .x)$ID, 1, 0) %>% 
+            as.data.frame) # UpSetR doesn't like tibbles
+# set column names
+names(binaries_wild) <- wild
+# have a look at the data
+head(binaries_wild)  
+# how many duplications are present in more than 3 wild locations
+filter(binaries_wild,rowSums(binaries_wild)>3) %>% nrow() #masked:6513/11944 ie 54.5%
+# UpSet plot of the intersected duplications across locations
+upset(binaries_wild, nsets = length(wild), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
+      sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 1.4), order.by = "freq")
+
+sel <- pops[c(4,10,11,13,16)]
+pop_num_alts_present_fil_sel <- pop_num_alts_present_fil %>% 
+  filter(pop_num_alts_present_fil$pop %in% sel)
+ids_sel <- unique(pop_num_alts_present_fil_sel$ID)
+#Count number of duplications present in selected samples
+length(ids_sel)#9478
+binaries_sel <- sel %>% 
+  map_dfc(~ ifelse(ids_sel %in% filter(pop_num_alts_present_fil_sel, pop == .x)$ID, 1, 0) %>% 
+            as.data.frame) # UpSetR doesn't like tibbles
+# set column names
+names(binaries_sel) <- sel
+# have a look at the data
+head(binaries_sel)  
+# how many duplications are present in more than 3 wild locations
+filter(binaries_sel,rowSums(binaries_sel)>3) %>% nrow() #masked:4472/9478 ie 47.18
+# UpSet plot of the intersected duplications across locations
+upset(binaries_sel, nsets = length(sel), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
+      sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 1.4), order.by = "freq")
+
+## How mnay dups are present in both wild and selected samples? 
+length(Reduce(intersect,list(ids_wild,ids_sel))) #8585
+common_wild_sel <- Reduce(intersect,list(ids_wild,ids_sel))
+grid.newpage()
+draw.pairwise.venn(11944, 9478, 8585, category = c("Wild samples", "Selected samples"), 
+                   lty = rep("blank", 2), fill = c("sky blue", "orange"), 
+                   alpha = rep(0.5, 2), cat.pos = c(340, 45), cat.dist = rep(0.025, 2), scaled = TRUE)
+#all and wild
+length(Reduce(intersect,list(ids,ids_wild)))
+#all and sel
+length(Reduce(intersect,list(ids,ids_sel)))
+# all_wild_sel
+length(Reduce(intersect,list(ids,ids_wild,ids_sel)))
+#As seen here HG/NG dont have any dup unique
 
 # Dups per location POST FILTRATION #
 pop_sum_fil <- as.data.frame(colSums(binaries))
