@@ -86,9 +86,9 @@ ggplot(oysterdup_fil, aes(length))+geom_histogram(binwidth = 60,fill="steelblue"
   xlim(c(0,5000)) + 
   labs(x="Length of duplications", y="Frequency") + theme_classic() +
   theme(axis.text.x  = element_text(size=12), axis.text.y  = element_text(size=12), axis.title.x  = element_text(face = "bold", size=12), axis.title.y  = element_text(face = "bold", size=12)) 
-ggsave(filename = "FigS1.png", 
-       path = here("characterization/figures"),
-       width = 4, height = 3, units = "in" )
+# ggsave(filename = "FigS1.png", 
+#        path = here("characterization/figures"),
+#        width = 4, height = 3, units = "in" )
 # Distribution of duplication lengths per population
 pop_num_alts_present_fil <- read.table(here("filtration/pop_num_alts_present_fil"), 
               sep="\t" , stringsAsFactors = FALSE, header = TRUE)
@@ -118,6 +118,104 @@ filter(binaries,rowSums(binaries)>3) %>% nrow() #5954 ie 56%
 # Fig 2b from paper: UpSet plot of the intersected duplications across locations
 upset(binaries, nsets = length(pops), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
       sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 2), order.by = "freq")
+
+## Upset plot of duplications to compare hightemp and lowtemp among themselves POST FILTERATION ##
+# For h_temp samples
+#h_temp <- pops[c(1,8,10)]
+h_temp <- c("CL", "LM", "SL")
+pop_num_alts_present_fil_h_temp <- pop_num_alts_present_fil %>% 
+  filter(pop %in% h_temp)
+ids_h_temp <- unique(pop_num_alts_present_fil_h_temp$ID)
+#Count number of duplications present in h_temp samples
+length(ids_h_temp)#7731
+binaries_h_temp <- h_temp %>% 
+  map_dfc(~ ifelse(ids_h_temp %in% filter(pop_num_alts_present_fil_h_temp, pop == .x)$ID, 1, 0) %>% 
+            as.data.frame) # UpSetR doesn't like tibbles
+# set column names
+names(binaries_h_temp) <- h_temp
+# have a look at the data
+head(binaries_h_temp)  
+# UpSet plot of the intersected duplications across locations
+upset(binaries_h_temp, nsets = length(h_temp), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
+      sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 1.4), order.by = "freq")
+
+#l_temp <- pops[c(2,3,4,5)]
+l_temp <- c("CLP","CS","HC","HCVA")
+pop_num_alts_present_fil_l_temp <- pop_num_alts_present_fil %>% 
+  filter(pop %in% l_temp)
+ids_l_temp <- unique(pop_num_alts_present_fil_l_temp$ID)
+#Count number of duplications present in l_temp samples
+length(ids_l_temp)#7684 #8243 with CS
+binaries_l_temp <- l_temp %>% 
+  map_dfc(~ ifelse(ids_l_temp %in% filter(pop_num_alts_present_fil_l_temp, pop == .x)$ID, 1, 0) %>% 
+            as.data.frame) # UpSetR doesn't like tibbles
+# set column names
+names(binaries_l_temp) <- l_temp
+# have a look at the data
+head(binaries_l_temp)  
+# UpSet plot of the intersected duplications across locations
+upset(binaries_l_temp, nsets = length(l_temp), main.bar.color = "SteelBlue", sets.bar.color = "DarkCyan", 
+      sets.x.label = "Number duplicate loci", text.scale = c(rep(1.4, 5), 1.4), order.by = "freq")
+
+## How mnay dups are present in both low and high temp samples? 
+length(Reduce(intersect,list(ids_h_temp,ids_l_temp))) #5778 #5986 with CS
+common_hl_temp <- Reduce(intersect,list(ids_h_temp,ids_l_temp))
+grid.newpage()
+draw.pairwise.venn(7731, 8243, 5986, category = c("High temp samples", "Low temp samples"), 
+                   lty = rep("blank", 2), fill = c("sky blue", "orange"), 
+                   alpha = rep(0.5, 2), cat.pos = c(340, 45), cat.dist = rep(0.025, 2), scaled = TRUE)
+#ids in SL,SM (wild) and HG,NG (inbred)
+#rest_temp <- pops[c(6,7,9,11)]
+# rest_temp <- c("HG","NG","SL","SM")
+rest_temp <- c("HG","NG","HI","SM")
+pop_num_alts_present_fil_rest_temp <- pop_num_alts_present_fil %>% 
+  filter(pop %in% rest_temp)
+ids_rest_temp <- unique(pop_num_alts_present_fil_rest_temp$ID) 
+length(ids_rest_temp) #7576.. no its 7069
+#rest and h_temp
+length(Reduce(intersect,list(ids_rest_temp,ids_h_temp)))#6501... no its 5523
+#rest and l_temp
+length(Reduce(intersect,list(ids_rest_temp,ids_l_temp)))#6274.... no its 6172
+# rest_h_l_temp
+length(Reduce(intersect,list(ids_rest_temp,ids_h_temp,ids_l_temp))) #5575... no its 5237
+#Triple Venn between high temp, low temp and the rest of the locations
+grid.newpage()
+venn.plot <- draw.triple.venn(
+  #area1 = 7731,
+  area1 = length(ids_h_temp),
+  # area2 = 8243,
+  area2 = length(ids_l_temp),
+  # area3 = 7576,
+  area3 = length(ids_rest_temp),
+  # n12 = 5986,
+  n12 = length(Reduce(intersect,list(ids_h_temp,ids_l_temp))),
+  # n23 = 6274,
+  n23 = length(Reduce(intersect,list(ids_rest_temp,ids_l_temp))),
+  # n13 = 6501,
+  n13 = length(Reduce(intersect,list(ids_rest_temp,ids_h_temp))),
+  # n123 = 5575,
+  n123 = length(Reduce(intersect,list(ids_rest_temp,ids_h_temp,ids_l_temp))),
+  category = c("High", "Low", "Rest"),
+  fill = c("dodgerblue", "goldenrod1", "seagreen3"),
+  lty = "blank",
+  cex = 2,
+  cat.cex = 2,
+  cat.col = c("dodgerblue", "goldenrod1", "seagreen3"))
+#Get IDs that are unique to high and low temp
+high_df <- as.data.frame(ids_h_temp)
+colnames(high_df) <- c("ID")
+low_df <- as.data.frame(ids_l_temp)
+colnames(low_df) <- c("ID")
+rest_df <- as.data.frame(ids_rest_temp)
+colnames(rest_df) <- c("ID")
+#get IDs unique to high temp
+high_uniq1 <- anti_join(high_df,low_df)
+high_uniq2 <- anti_join(high_uniq1,rest_df)
+nrow(high_uniq2)  #1459
+#get IDs unique to low temp
+low_uniq1 <- anti_join(low_df,high_df)
+low_uniq2 <- anti_join(low_uniq1,rest_df)
+nrow(low_uniq2) #1322
 
 # Dups per location POST FILTRATION #
 pop_sum_fil <- as.data.frame(colSums(binaries))
