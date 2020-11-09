@@ -272,12 +272,12 @@ common_dups_htemp <- pop_num_alts_present_fil_h_temp %>% group_by(ID) %>%
 #Get dups common to all populations but present in all samples of each population
 gtypes_long_htemp <- gtypes_long_fil %>% filter(!is.na(num_alts)) %>% filter(num_alts > 0) %>% 
                       filter(pop %in% h_temp)
-#Out of the 3730 dups that are present in all populations how many are present in 
-# Most frequent: >90% samples (i.e. in 15 samples) 
+#Out of the 3730 dups that are present in all high temp locations how many are present in 
+# Most frequent: >90% samples (i.e. in 15 samples) #325
 most_freq_htemp <- semi_join(gtypes_long_htemp,common_dups_htemp, by="ID") %>% group_by(ID) %>% 
                   summarize(count=n()) %>% filter(count > 15) %>% select("ID")
 # Least frequent: <10% samples (ie 1.7=2 individuals)
-# no dups present in <10%, the least number of individuals is 4 hence using <5 as criteria, ie <30%
+# no dups present in <10%, the least number of individuals is 4 hence using <5 as criteria, ie <30% #4 dups
 least_freq_htemp <- gtypes_long_fil %>% filter(!is.na(num_alts)) %>% filter(pop %in% h_temp) %>% group_by(ID) %>% 
                     summarize(count=n()) %>% filter(count < 5) %>% select("ID")
 # Low temp 
@@ -286,18 +286,18 @@ common_dups_ltemp <- pop_num_alts_present_fil_l_temp %>% group_by(ID) %>%
 #Get dups common to all populations but present in all samples of each population
 gtypes_long_ltemp <- gtypes_long_fil %>% filter(!is.na(num_alts)) %>% filter(num_alts > 0) %>% 
   filter(pop %in% l_temp)
-#Out of the 3806 dups that are present in all populations how many are present in 
-# Most frequent: >90% samples (i.e. in 22 samples) 
+#Out of the 3806 dups that are present in all low temp sites how many are present in 
+# Most frequent: >90% samples (i.e. in 22 samples) #513
 most_freq_ltemp <- semi_join(gtypes_long_ltemp,common_dups_ltemp, by="ID") %>% group_by(ID) %>% 
   summarize(count=n()) %>% filter(count > 22) %>% select("ID")
-# Least frequent: <10% samples (ie 1.7=2 individuals)
-# no dups present in <10%, the least number of individuals is 12 hence using <13 as criteria, ie <50%
+# Least frequent: <10% samples (ie 3 individuals)
+# no dups present in <10%, the least number of individuals is 12 with 1 dup and 13 with 3 dups hence using <14 as criteria, ie <54% #4dups
 least_freq_ltemp <- gtypes_long_fil %>% filter(!is.na(num_alts)) %>% filter(pop %in% l_temp) %>% group_by(ID) %>% 
   summarize(count=n()) %>% filter(count < 14) %>% select("ID")
 # Most freq dups in high temp that are least freq in low temp
-semi_join(most_freq_htemp,least_freq_ltemp) 
+semi_join(most_freq_htemp,least_freq_ltemp) #1dup
 # Most freq dups in low temp that are least freq in high temp
-semi_join(most_freq_ltemp,least_freq_htemp) 
+semi_join(most_freq_ltemp,least_freq_htemp) #1dup
 
 
 #### Frequency of Duplications per chromosome comparison across locations ####
